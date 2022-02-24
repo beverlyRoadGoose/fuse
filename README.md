@@ -1,8 +1,8 @@
-<h1 align=center>
+<h1 align="center">
     <img src="./assets/img/fuse.png"><br>
     Fuse
 </h1>
-<div align=center>
+<div align="center">
 
 [![License: MIT](https://img.shields.io/badge/License-MIT-yellow.svg)](https://opensource.org/licenses/MIT)
 [![Documentation](https://img.shields.io/badge/Documentation-GoDoc-green.svg)](https://pkg.go.dev/heytobi.dev/fuse)
