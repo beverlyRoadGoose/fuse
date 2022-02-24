@@ -1,1 +1,1 @@
-package config
+package config // import "heytobi.dev/fuse/config"
