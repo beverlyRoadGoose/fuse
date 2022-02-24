@@ -1,14 +1,15 @@
 <h1 align="center">
     <img src="./assets/img/fuse.png"><br>
     Fuse
-</h1>
+
 <div align="center">
 
 [![License: MIT](https://img.shields.io/badge/License-MIT-yellow.svg)](https://opensource.org/licenses/MIT)
 [![Documentation](https://img.shields.io/badge/Documentation-GoDoc-green.svg)](https://pkg.go.dev/heytobi.dev/fuse)
 </div>
+</h1>
 
-<p align="center">Fuse is a Go library for developing <a href="https://telegram.org/">Telegram</a> bots, using the <a href="https://core.telegram.org/bots/api">Telegram Bot API.</a></p>
+Fuse is a Go library for developing [Telegram](https://telegram.org/) bots, using the [Telegram Bot API](https://core.telegram.org/bots/api).
 
 ## Installation
 ```console
