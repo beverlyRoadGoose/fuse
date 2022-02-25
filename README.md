@@ -1,15 +1,13 @@
-<h1 align="center">
-    <img src="./assets/img/fuse.png"><br>
-    Fuse
-
-<div align="center">
+<h2>
+    <img src="./assets/img/fuse.png">
+<div>
 
 [![License: MIT](https://img.shields.io/badge/License-MIT-yellow.svg)](https://opensource.org/licenses/MIT)
 [![GoDoc](https://godoc.org/heytobi.dev/fuse?status.svg)](https://godoc.org//heytobi.dev/fuse)
 [![GitHub Actions](https://github.com/beverlyRoadGoose/fuse/actions/workflows/ci.yml/badge.svg)](https://github.com/beverlyRoadGoose/fuse/actions/workflows/ci.yml)
 [![codecov.io](https://codecov.io/gh/beverlyRoadGoose/fuse/coverage.svg?branch=main)](https://codecov.io/gh/beverlyRoadGoose/fuse)
 </div>
-</h1>
+</h2>
 
 Fuse is a Go library for developing [Telegram](https://telegram.org/) bots, using the [Telegram Bot API](https://core.telegram.org/bots/api).
 
