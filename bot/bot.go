@@ -11,6 +11,13 @@ type Bot struct {
 }
 
 // New initializes a new bot.
-func New() (*Bot, error) {
-	return nil, nil
+func New(serviceProvider MessagingServiceProvider) (*Bot, error) {
+	bot := &Bot{serviceProvider: serviceProvider}
+
+	err := bot.serviceProvider.SendMessage()
+	if err != nil {
+		return nil, err
+	}
+
+	return bot, nil
 }
