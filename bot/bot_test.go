@@ -1,4 +1,5 @@
 package bot // import "heytobi.dev/fuse/bot"
+
 import (
 	"testing"
 
@@ -19,4 +20,11 @@ func TestNewBot_ReturnErrorIfServiceProviderIsMissing(t *testing.T) {
 	assert.Nil(t, bot)
 	assert.Error(t, err)
 	assert.Equal(t, err, errMissingServiceProvider)
+}
+
+func TestNewBot_InitializeBotSuccessfully(t *testing.T) {
+	bot, err := NewBot(&Config{}, &mockMessagingServiceProvider{})
+
+	assert.NotNil(t, bot)
+	assert.Nil(t, err)
 }
