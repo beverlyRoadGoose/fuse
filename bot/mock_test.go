@@ -11,3 +11,9 @@ func (m *mockMessagingServiceProvider) SendMessage() error {
 
 	return args.Error(0)
 }
+
+func (m *mockMessagingServiceProvider) Start() error {
+	args := m.Called()
+
+	return args.Error(0)
+}

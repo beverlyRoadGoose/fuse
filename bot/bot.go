@@ -12,6 +12,7 @@ var (
 // messagingServiceProvider defines the functions required of a messaging service provider.
 type messagingServiceProvider interface {
 	SendMessage() error
+	Start() error
 }
 
 // Config defines the configurable parameters of a Bot.
@@ -44,4 +45,14 @@ func NewBot(config *Config, serviceProvider messagingServiceProvider) (*Bot, err
 	}
 
 	return bot, nil
+}
+
+// Start starts the process of polling for updates from the service provider.
+func (b *Bot) Start() error {
+	err := b.serviceProvider.Start()
+	if err != nil {
+		return errors.Wrap(err, "failed to start bot")
+	}
+
+	return nil
 }

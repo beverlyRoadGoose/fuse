@@ -3,6 +3,7 @@ package bot // import "heytobi.dev/fuse/bot"
 import (
 	"testing"
 
+	"github.com/pkg/errors"
 	"github.com/stretchr/testify/assert"
 )
 
@@ -27,4 +28,14 @@ func TestNewBot_InitializeBotSuccessfully(t *testing.T) {
 
 	assert.NotNil(t, bot)
 	assert.Nil(t, err)
+}
+
+func TestBot_Start_ReturnErrorIfServiceProviderFailsToStart(t *testing.T) {
+	serviceProvider := &mockMessagingServiceProvider{}
+	serviceProvider.On("Start").Return(errors.New("failed to start"))
+
+	bot, _ := NewBot(&Config{}, serviceProvider)
+	err := bot.Start()
+
+	assert.NotNil(t, err)
 }

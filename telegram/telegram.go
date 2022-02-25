@@ -53,7 +53,12 @@ func Init(config *Config, httpClient httpClient) (*Telegram, error) {
 	return telegram, nil
 }
 
-// SendMessage sends a message to the user
+// SendMessage sends a message to the user.
 func (t *Telegram) SendMessage() error {
+	return nil
+}
+
+// Start starts the process of polling for updates from Telegram.
+func (t *Telegram) Start() error {
 	return nil
 }
