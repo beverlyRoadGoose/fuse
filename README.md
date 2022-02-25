@@ -5,7 +5,9 @@
 <div align="center">
 
 [![License: MIT](https://img.shields.io/badge/License-MIT-yellow.svg)](https://opensource.org/licenses/MIT)
-[![Documentation](https://img.shields.io/badge/Documentation-GoDoc-green.svg)](https://pkg.go.dev/heytobi.dev/fuse)
+[![GoDoc](https://godoc.org/heytobi.dev/fuse?status.svg)](https://godoc.org//heytobi.dev/fuse)
+[![GitHub Actions](https://github.com/beverlyRoadGoose/fuse/actions/workflows/ci.yml/badge.svg)](https://github.com/beverlyRoadGoose/fuse/actions/workflows/ci.yml)
+[![codecov.io](https://codecov.io/gh/beverlyRoadGoose/fuse/coverage.svg?branch=master)](https://codecov.io/gh/beverlyRoadGoose/fuse)
 </div>
 </h1>
 

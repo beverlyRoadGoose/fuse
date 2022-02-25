@@ -1,2 +1,2 @@
 test-unit:
-	go test ./...
+	go test ./... -coverprofile=coverage.txt -covermode=atomic
