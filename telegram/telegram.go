@@ -18,7 +18,7 @@ type httpClient interface {
 
 // Config defines the configurable parameters of a Telegram connection.
 type Config struct {
-	token string
+	Token string
 }
 
 // Telegram defines an instance of telegram connection.
@@ -37,7 +37,7 @@ func Init(config *Config, httpClient httpClient) (*Telegram, error) {
 		return nil, errMissingConfig
 	}
 
-	if config.token == "" {
+	if config.Token == "" {
 		return nil, errMissingToken
 	}
 

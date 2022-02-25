@@ -23,7 +23,7 @@ func TestInit_ReturnErrorIfTokenIsMissing(t *testing.T) {
 }
 
 func TestInit_ReturnErrorIfHttpClientIsMissing(t *testing.T) {
-	bot, err := Init(&Config{token: "test"}, nil)
+	bot, err := Init(&Config{Token: "test"}, nil)
 
 	assert.Nil(t, bot)
 	assert.Error(t, err)
@@ -31,7 +31,7 @@ func TestInit_ReturnErrorIfHttpClientIsMissing(t *testing.T) {
 }
 
 func TestInit_InitializeSuccessfully(t *testing.T) {
-	telegram, err := Init(&Config{token: "test"}, &mockHttpClient{})
+	telegram, err := Init(&Config{Token: "test"}, &mockHttpClient{})
 
 	assert.NotNil(t, telegram)
 	assert.Nil(t, err)
