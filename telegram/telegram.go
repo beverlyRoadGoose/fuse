@@ -30,8 +30,8 @@ type Telegram struct {
 // Init initializes a Telegram instance.
 //
 // It returns an error if any of these conditions are met:
-// - The given config is nil
-// - The given serviceProvider is nil
+//  - The given config is nil
+//  - The given serviceProvider is nil
 func Init(config *Config, httpClient httpClient) (*Telegram, error) {
 	if config == nil {
 		return nil, errMissingConfig
