@@ -1,22 +1,46 @@
 package bot // import "heytobi.dev/fuse/bot"
 
-// MessagingServiceProvider defines the functions required of a messaging service provider.
-type MessagingServiceProvider interface {
+import (
+	"github.com/pkg/errors"
+)
+
+var (
+	errMissingConfig          = errors.New("a configuration object is required to initialize a bot")
+	errMissingServiceProvider = errors.New("a service provider is required to initialize a bot")
+)
+
+// messagingServiceProvider defines the functions required of a messaging service provider.
+type messagingServiceProvider interface {
 	SendMessage() error
+}
+
+// Config defines the configurable parameters of a Bot.
+type Config struct {
 }
 
 // Bot defines the attributes of a bot.
 type Bot struct {
-	serviceProvider MessagingServiceProvider
+	config          *Config
+	serviceProvider messagingServiceProvider
 }
 
-// New initializes a new bot.
-func New(serviceProvider MessagingServiceProvider) (*Bot, error) {
-	bot := &Bot{serviceProvider: serviceProvider}
+// NewBot initializes a new bot.
+//
+// It returns an error if any of these conditions are met:
+// - The given config is nil
+// - The given serviceProvider is nil
+func NewBot(config *Config, serviceProvider messagingServiceProvider) (*Bot, error) {
+	if config == nil {
+		return nil, errMissingConfig
+	}
 
-	err := bot.serviceProvider.SendMessage()
-	if err != nil {
-		return nil, err
+	if serviceProvider == nil {
+		return nil, errMissingServiceProvider
+	}
+
+	bot := &Bot{
+		config:          config,
+		serviceProvider: serviceProvider,
 	}
 
 	return bot, nil

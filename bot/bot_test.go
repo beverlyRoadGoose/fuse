@@ -1,8 +1,22 @@
 package bot // import "heytobi.dev/fuse/bot"
-import "testing"
+import (
+	"testing"
 
-func TestNew_ShouldBeAbleToInitializeBot(t *testing.T) {
-	serviceProvider := &mockMessagingServiceProvider{}
-	serviceProvider.On("SendMessage").Return(nil)
-	_, _ = New(serviceProvider)
+	"github.com/stretchr/testify/assert"
+)
+
+func TestNewBot_ReturnErrorIfConfigIsNil(t *testing.T) {
+	bot, err := NewBot(nil, nil)
+
+	assert.Nil(t, bot)
+	assert.Error(t, err)
+	assert.Equal(t, err, errMissingConfig)
+}
+
+func TestNewBot_ReturnErrorIfServiceProviderIsMissing(t *testing.T) {
+	bot, err := NewBot(&Config{}, nil)
+
+	assert.Nil(t, bot)
+	assert.Error(t, err)
+	assert.Equal(t, err, errMissingServiceProvider)
 }
