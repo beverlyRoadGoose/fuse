@@ -21,17 +21,6 @@ type BotCommand struct {
 	Description string `json:"description"`
 }
 
-// InlineQuery represents an incoming inline query.
-// See https://core.telegram.org/bots/api#inlinequery
-type InlineQuery struct {
-	ID       string    `json:"id"`
-	Sender   *User     `json:"from"`
-	Query    string    `json:"query"`
-	Offset   string    `json:"offset"`
-	ChatType string    `json:"chat_type"`
-	Location *Location `json:"location"`
-}
-
 // MaskPosition describes the position on faces where a mask should be placed by default.
 // See https://core.telegram.org/bots/api#maskposition
 type MaskPosition struct {
