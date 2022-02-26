@@ -59,32 +59,32 @@ func TestInit_InitializeSuccessfully(t *testing.T) {
 }
 
 func TestStart_StartSuccessfully(t *testing.T) {
-	telegram, err := Init(&Config{Token: "test"}, &mockHttpClient{})
-	err = telegram.Start()
+	telegram, _ := Init(&Config{Token: "test"}, &mockHttpClient{})
+	err := telegram.Start()
 
 	assert.Nil(t, err)
 }
 
 func TestSend_SendMessageSuccessfully(t *testing.T) {
-	telegram, err := Init(&Config{Token: "test"}, &mockHttpClient{})
-	err = telegram.Send("message")
+	telegram, _ := Init(&Config{Token: "test"}, &mockHttpClient{})
+	err := telegram.Send("message")
 
 	assert.Nil(t, err)
 }
 
 func TestRegisterHandler_RegisterHandlerSuccessfully(t *testing.T) {
-	telegram, err := Init(&Config{Token: "test"}, &mockHttpClient{})
-	err = telegram.RegisterHandler("/start", func(message interface{}) {})
+	telegram, _ := Init(&Config{Token: "test"}, &mockHttpClient{})
+	err := telegram.RegisterHandler("/start", func(message interface{}) {})
 
 	assert.Nil(t, err)
 }
 
 func TestRegisterHandler_ReturnErrorIfHandlerExists(t *testing.T) {
-	telegram, err := Init(&Config{Token: "test"}, &mockHttpClient{})
-	err = telegram.RegisterHandler("/start", func(message interface{}) {})
+	telegram, _ := Init(&Config{Token: "test"}, &mockHttpClient{})
+	_ = telegram.RegisterHandler("/start", func(message interface{}) {})
 
 	// try registering another handler for the same command
-	err = telegram.RegisterHandler("/start", func(message interface{}) {})
+	err := telegram.RegisterHandler("/start", func(message interface{}) {})
 
 	assert.NotNil(t, err)
 	assert.Equal(t, errHandlerExists, err)

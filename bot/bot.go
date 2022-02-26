@@ -8,7 +8,7 @@ var (
 	errMissingServiceProvider = errors.New("a service provider is required to initialize a bot")
 )
 
-// HandlerFunc defines functions that can handle bot commands / messages
+// HandlerFunc defines functions that can handle bot commands / messages.
 type HandlerFunc func(interface{})
 
 // Sendable defines sendable items.
@@ -52,7 +52,7 @@ func (b *Bot) Send(message Sendable) error {
 	return b.serviceProvider.Send(message)
 }
 
-// RegisterHandler registers the given handler function to handle invocations of the given command
+// RegisterHandler registers the given handler function to handle invocations of the given command.
 func (b *Bot) RegisterHandler(command string, handlerFunc HandlerFunc) error {
 	return b.serviceProvider.RegisterHandler(command, handlerFunc)
 }

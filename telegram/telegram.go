@@ -89,7 +89,7 @@ func (t *Telegram) Send(message bot.Sendable) error {
 	return nil
 }
 
-// RegisterHandler registers the given handler function to handle invocations of the given command
+// RegisterHandler registers the given handler function to handle invocations of the given command.
 func (t *Telegram) RegisterHandler(command string, handlerFunc bot.HandlerFunc) error {
 	if _, handlerExists := t.handlers[command]; handlerExists {
 		return errHandlerExists
