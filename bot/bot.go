@@ -14,11 +14,15 @@ type HandlerFunc func(interface{})
 // Sendable defines sendable items.
 type Sendable interface{}
 
+// Update defines updates that can be received from messaging service providers.
+type Update interface{}
+
 // messagingServiceProvider defines the functions required of a messaging service provider.
 type messagingServiceProvider interface {
 	Start() error
 	Send(message Sendable) error
-	RegisterHandler(command string, handlerFunc HandlerFunc) error
+	RegisterHandler(command string, handler HandlerFunc) error
+	ProcessUpdate(update Update) error
 }
 
 // Bot defines the attributes of a bot.

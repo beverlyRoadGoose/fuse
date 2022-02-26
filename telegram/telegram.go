@@ -19,6 +19,7 @@ var (
 	errMissingHttpClient   = errors.New("an http client is required to initialize a Telegram connection")
 	errInvalidUpdateMethod = errors.New("invalid update method")
 	errHandlerExists       = errors.New("an handler already exists for this command")
+	errInvalidUpdateType   = errors.New("invalid type passed to ProcessUpdate function")
 )
 
 type httpClient interface {
@@ -27,8 +28,9 @@ type httpClient interface {
 
 // Config defines the configurable parameters of a Telegram connection.
 type Config struct {
-	Token        string
-	UpdateMethod string
+	Token          string
+	UpdateMethod   string
+	PollingTimeout int
 }
 
 // Telegram defines an instance of telegram connection.
@@ -97,5 +99,20 @@ func (t *Telegram) RegisterHandler(command string, handlerFunc bot.HandlerFunc) 
 
 	t.handlers[command] = handlerFunc
 
+	return nil
+}
+
+// ProcessUpdates processes updates from telegram.
+func (t *Telegram) ProcessUpdate(update bot.Update) error {
+	update, ok := update.(Update)
+	if !ok {
+		return errInvalidUpdateType
+	}
+
+	return nil
+}
+
+// registerWebhook registers the configured webhook to listen for events.
+func (t *Telegram) registerWebhook() error {
 	return nil
 }
