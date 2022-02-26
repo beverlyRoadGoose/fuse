@@ -6,14 +6,20 @@ type mockMessagingServiceProvider struct {
 	mock.Mock
 }
 
-func (m *mockMessagingServiceProvider) SendMessage() error {
+func (m *mockMessagingServiceProvider) Start() error {
 	args := m.Called()
 
 	return args.Error(0)
 }
 
-func (m *mockMessagingServiceProvider) Start() error {
-	args := m.Called()
+func (m *mockMessagingServiceProvider) Send(message Sendable) error {
+	args := m.Called(message)
+
+	return args.Error(0)
+}
+
+func (m *mockMessagingServiceProvider) RegisterHandler(command string, handlerFunc HandlerFunc) error {
+	args := m.Called(command, handlerFunc)
 
 	return args.Error(0)
 }

@@ -5,42 +5,37 @@ import (
 )
 
 var (
-	errMissingConfig          = errors.New("a configuration object is required to initialize a bot")
 	errMissingServiceProvider = errors.New("a service provider is required to initialize a bot")
 )
 
+// HandlerFunc defines functions that can handle bot commands / messages
+type HandlerFunc func(interface{})
+
+// Sendable defines sendable items.
+type Sendable interface{}
+
 // messagingServiceProvider defines the functions required of a messaging service provider.
 type messagingServiceProvider interface {
-	SendMessage() error
 	Start() error
-}
-
-// Config defines the configurable parameters of a Bot.
-type Config struct {
+	Send(message Sendable) error
+	RegisterHandler(command string, handlerFunc HandlerFunc) error
 }
 
 // Bot defines the attributes of a bot.
 type Bot struct {
-	config          *Config
 	serviceProvider messagingServiceProvider
 }
 
 // NewBot initializes a new bot.
 //
 // It returns an error if any of these conditions are met:
-//  - The given config is nil
 //  - The given serviceProvider is nil
-func NewBot(config *Config, serviceProvider messagingServiceProvider) (*Bot, error) {
-	if config == nil {
-		return nil, errMissingConfig
-	}
-
+func NewBot(serviceProvider messagingServiceProvider) (*Bot, error) {
 	if serviceProvider == nil {
 		return nil, errMissingServiceProvider
 	}
 
 	bot := &Bot{
-		config:          config,
 		serviceProvider: serviceProvider,
 	}
 
@@ -49,10 +44,15 @@ func NewBot(config *Config, serviceProvider messagingServiceProvider) (*Bot, err
 
 // Start starts the process of polling for updates from the service provider.
 func (b *Bot) Start() error {
-	err := b.serviceProvider.Start()
-	if err != nil {
-		return errors.Wrap(err, "failed to start bot")
-	}
+	return b.serviceProvider.Start()
+}
 
-	return nil
+// Send sends a message to the user.
+func (b *Bot) Send(message Sendable) error {
+	return b.serviceProvider.Send(message)
+}
+
+// RegisterHandler registers the given handler function to handle invocations of the given command
+func (b *Bot) RegisterHandler(command string, handlerFunc HandlerFunc) error {
+	return b.serviceProvider.RegisterHandler(command, handlerFunc)
 }

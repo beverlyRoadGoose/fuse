@@ -3,6 +3,8 @@ package telegram // import "heytobi.dev/fuse/telegram"
 import (
 	"net/http"
 
+	"heytobi.dev/fuse/bot"
+
 	"github.com/pkg/errors"
 )
 
@@ -16,6 +18,7 @@ var (
 	errMissingConfig       = errors.New("a configuration object is required to initialize a Telegram connection")
 	errMissingHttpClient   = errors.New("an http client is required to initialize a Telegram connection")
 	errInvalidUpdateMethod = errors.New("invalid update method")
+	errHandlerExists       = errors.New("an handler already exists for this command")
 )
 
 type httpClient interface {
@@ -32,6 +35,7 @@ type Config struct {
 type Telegram struct {
 	config     *Config
 	httpClient httpClient
+	handlers   map[string]bot.HandlerFunc
 }
 
 // Init initializes a Telegram instance.
@@ -69,17 +73,29 @@ func Init(config *Config, httpClient httpClient) (*Telegram, error) {
 	telegram := &Telegram{
 		config:     config,
 		httpClient: httpClient,
+		handlers:   make(map[string]bot.HandlerFunc),
 	}
 
 	return telegram, nil
 }
 
-// SendMessage sends a message to the user.
-func (t *Telegram) SendMessage() error {
+// Start starts the process of polling for updates from Telegram.
+func (t *Telegram) Start() error {
 	return nil
 }
 
-// Start starts the process of polling for updates from Telegram.
-func (t *Telegram) Start() error {
+// Send sends a message to the user.
+func (t *Telegram) Send(message bot.Sendable) error {
+	return nil
+}
+
+// RegisterHandler registers the given handler function to handle invocations of the given command
+func (t *Telegram) RegisterHandler(command string, handlerFunc bot.HandlerFunc) error {
+	if _, handlerExists := t.handlers[command]; handlerExists {
+		return errHandlerExists
+	}
+
+	t.handlers[command] = handlerFunc
+
 	return nil
 }
