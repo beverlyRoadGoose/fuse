@@ -10,6 +10,7 @@ import (
 	"heytobi.dev/fuse/bot"
 
 	"github.com/pkg/errors"
+	"github.com/sirupsen/logrus"
 )
 
 const (
@@ -119,7 +120,7 @@ func (b *Bot) RegisterHandler(command string, handlerFunc bot.HandlerFunc) error
 // RegisterWebhook registers the given webhook to listen for updates.
 // Returns the result of the request, True on success.
 // See https://core.telegram.org/bots/api#setwebhook
-func (b *Bot) RegisterWebhook(webhook string) (bool, error) {
+func (b *Bot) RegisterWebhook(log *logrus.Entry, webhook string) (bool, error) {
 	if webhook == "" {
 		return false, errMissingWebhookUrl
 	}
@@ -129,16 +130,22 @@ func (b *Bot) RegisterWebhook(webhook string) (bool, error) {
 	}
 
 	url := fmt.Sprintf(telegramApiUrlFmt, b.config.Token, setWebhook)
+	log.WithField("request", requestBody).WithField("url", url).Info("set webhook url")
+
 	responseBody, err := b.makeRequest(httpPost, url, requestBody)
 	if err != nil {
 		return false, errors.Wrap(err, "failed to make setWebhook request")
 	}
+
+	log.WithField("response", responseBody).Info("set webhook response")
 
 	var resp setWebhookResponse
 	err = json.Unmarshal(responseBody, &resp)
 	if err != nil {
 		return false, errors.Wrap(err, "failed to unmarshall setWebhook response")
 	}
+
+	log.WithField("response_unmarshalled", resp).Info("set webhook response unmarshalled")
 
 	return resp.Ok, nil
 }
