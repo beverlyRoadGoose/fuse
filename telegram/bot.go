@@ -130,7 +130,7 @@ func (b *Bot) RegisterWebhook(log *logrus.Entry, webhook string) (bool, error) {
 	}
 
 	url := fmt.Sprintf(telegramApiUrlFmt, b.config.Token, setWebhook)
-	log.WithField("request", requestBody).WithField("url", url).Info("set webhook url")
+	log.WithField("request_body", requestBody).WithField("url", url).Info("set webhook url")
 
 	bodyJson, err := json.Marshal(requestBody)
 	if err != nil {
@@ -143,6 +143,7 @@ func (b *Bot) RegisterWebhook(log *logrus.Entry, webhook string) (bool, error) {
 	if err != nil {
 		return false, errors.Wrap(err, "failed to create register webhook request")
 	}
+	log.WithField("request", request).Info("set webhook url request")
 
 	response, err := b.httpClient.Do(request)
 	if err != nil {
