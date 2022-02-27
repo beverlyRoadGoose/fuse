@@ -137,8 +137,6 @@ func (b *Bot) RegisterWebhook(log *logrus.Entry, webhook string) (bool, error) {
 		return false, errors.Wrap(err, "failed to marshal register webhook request body")
 	}
 
-	log.Info("abcd: " + string(bodyJson))
-
 	log.WithField("body", bodyJson).Info("body json")
 
 	request, err := http.NewRequest(httpPost, url, bytes.NewBuffer(bodyJson))
@@ -146,6 +144,7 @@ func (b *Bot) RegisterWebhook(log *logrus.Entry, webhook string) (bool, error) {
 		return false, errors.Wrap(err, "failed to create register webhook request")
 	}
 	log.WithField("request", request).Info("set webhook url request")
+	request.Header.Set("Content-Type", "application/json")
 
 	response, err := b.httpClient.Do(request)
 	if err != nil {
@@ -205,6 +204,7 @@ func (b *Bot) Send(s bot.Sendable) (bool, error) {
 	if err != nil {
 		return false, errors.Wrap(err, "failed to create send request")
 	}
+	request.Header.Set("Content-Type", "application/json")
 
 	response, err := b.httpClient.Do(request)
 	if err != nil {
