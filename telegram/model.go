@@ -1,6 +1,6 @@
 package telegram // import "heytobi.dev/fuse/telegram"
 
-// User represents a Telegram user or bot.
+// User represents a Bot user or bot.
 // See https://core.telegram.org/bots/api#user
 type User struct {
 	ID                      int64  `json:"id"`

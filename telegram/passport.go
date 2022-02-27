@@ -1,13 +1,13 @@
 package telegram // import "heytobi.dev/fuse/telegram"
 
-// PassportData contains information about Telegram Passport data shared with the bot by the user.
+// PassportData contains information about Bot Passport data shared with the bot by the user.
 // See https://core.telegram.org/bots/api#passportfile
 type PassportData struct {
 	Data        []EncryptedPassportElement `json:"data"`
 	Credentials *EncryptedCredentials      `json:"credentials"`
 }
 
-// PassportFile represents a file uploaded to Telegram Passport.
+// PassportFile represents a file uploaded to Bot Passport.
 // See https://core.telegram.org/bots/api#passportdata
 type PassportFile struct {
 	FileID       string `json:"file_id"`
@@ -16,7 +16,7 @@ type PassportFile struct {
 	FileDate     int    `json:"file_date"`
 }
 
-// EncryptedPassportElement contains information about documents or other Telegram Passport elements shared with the bot
+// EncryptedPassportElement contains information about documents or other Bot Passport elements shared with the bot
 // by the user.
 // See https://core.telegram.org/bots/api#encryptedpassportelement
 type EncryptedPassportElement struct {
