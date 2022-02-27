@@ -119,16 +119,16 @@ func (b *Bot) RegisterHandler(command string, handlerFunc bot.HandlerFunc) error
 // RegisterWebhook registers the given webhook to listen for updates.
 // Returns the result of the request, True on success.
 // See https://core.telegram.org/bots/api#setwebhook
-func (b *Bot) RegisterWebhook(url string) (bool, error) {
-	if url == "" {
+func (b *Bot) RegisterWebhook(webhook string) (bool, error) {
+	if webhook == "" {
 		return false, errMissingWebhookUrl
 	}
 
-	url = fmt.Sprintf(telegramApiUrlFmt, b.config.Token, setWebhook)
 	requestBody := setWebhookRequest{
-		Url: url,
+		Url: webhook,
 	}
 
+	url := fmt.Sprintf(telegramApiUrlFmt, b.config.Token, setWebhook)
 	responseBody, err := b.makeRequest(httpPost, url, requestBody)
 	if err != nil {
 		return false, errors.Wrap(err, "failed to make setWebhook request")
