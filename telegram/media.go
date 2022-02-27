@@ -24,7 +24,7 @@ type Video struct {
 	FileSize     int64      `json:"file_size"`
 }
 
-// VideoNote represents a video message (available in Telegram apps as of v.4.0).
+// VideoNote represents a video message (available in Bot apps as of v.4.0).
 // See https://core.telegram.org/bots/api#videonote
 type VideoNote struct {
 	FileID       string     `json:"file_id"`
@@ -45,7 +45,7 @@ type PhotoSize struct {
 	FileSize     int    `json:"file_size"`
 }
 
-// Audio represents an audio file to be treated as music by the Telegram clients.
+// Audio represents an audio file to be treated as music by the Bot clients.
 // See https://core.telegram.org/bots/api#audio
 type Audio struct {
 	FileID       string     `json:"file_id"`
