@@ -19,7 +19,7 @@ const (
 	telegramApiUrlFmt = "https://api.telegram.org/bot%s/%s"
 
 	// Bot api methods
-	getUpdates  = "getUpdates"
+	//getUpdates  = "getUpdates"
 	setWebhook  = "setWebhook"
 	sendMessage = "sendMessage"
 
@@ -98,9 +98,9 @@ func Init(config *Config, httpClient httpClient) (*Bot, error) {
 
 // Start starts the process of polling for updates from Bot.
 func (b *Bot) Start() error {
-	if b.config.UpdateMethod == UpdateMethodGetUpdates {
-		// start polling here
-	}
+	//if b.config.UpdateMethod == UpdateMethodGetUpdates {
+	// start polling here
+	//}
 
 	return nil
 }
@@ -136,6 +136,9 @@ func (b *Bot) RegisterWebhook(url string) (bool, error) {
 
 	var resp setWebhookResponse
 	err = json.Unmarshal(responseBody, &resp)
+	if err != nil {
+		return false, errors.Wrap(err, "failed to unmarshall setWebhook response")
+	}
 
 	return resp.Ok, nil
 }
@@ -171,6 +174,9 @@ func (b *Bot) Send(s bot.Sendable) (bool, error) {
 
 	var resp sendMessageResponse
 	err = json.Unmarshal(responseBody, &resp)
+	if err != nil {
+		return false, errors.Wrap(err, "failed to unmarshall sendMessage response")
+	}
 
 	return resp.Ok, nil
 }
