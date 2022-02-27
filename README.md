@@ -16,6 +16,98 @@ Fuse is a Go library for developing [Telegram](https://telegram.org/) bots, usin
 you@pc:~$ go get -u heytobi.dev/fuse
 ```
 
+## Usage
+### Getting Updates through long polling
+#### Steps
+1. Initialize a Bot
+2. Register command handlers
+3. Start polling for updates
+
+```go
+httpClient := &http.Client{}
+config := &telegram.Config{
+    Token: "<YOUR TOKEN>",
+    UpdateMethod: telegram.UpdateMethodGetUpdates,
+}
+
+bot, err := telegram.Init(config, httpClient)
+if err != nil {
+    log.Fatal("failed to initialize telegram bot")
+}
+
+bot.RegisterHandler("/start", func(u interface{}) {
+    update, ok := u.(telegram.Update)
+    if !ok {
+        log.Error("start handler received unexpected type, should be a telegram update")
+    }
+
+    result, err := bot.Send(telegram.SendMessageRequest{
+        ChatID: update.Message.Chat.ID,
+        Text:   " ¯\_(ツ)_/¯",
+    })
+
+    if err != nil {
+        log.Error("failed to send telegram message")
+    }
+
+    if !result {
+        log.Warn("send message result was false")
+    }
+})
+
+bot.Start() // start listening for updates.
+
+```
+
+### Getting Updates through a Webhook
+#### Steps
+1. Initialize a Bot
+2. Register a Webhook
+3. Register command handlers
+4. Call the process update method directly whenever your webhook is invoked
+
+```go
+httpClient := &http.Client{}
+config := &telegram.Config{
+    Token: "<YOUR TOKEN>",
+    UpdateMethod: telegram.UpdateMethodWebhook,
+}
+
+bot, err := telegram.Init(config, httpClient)
+if err != nil {
+    log.Fatal("failed to initialize telegram bot")
+}
+
+bot.RegisterWebhook("mywebhook.com/notify")
+if err != nil {
+    log.Fatal("failed to register webhook")
+}
+
+bot.RegisterHandler("/start", func(u interface{}) {
+    update, ok := u.(telegram.Update)
+    if !ok {
+        log.Error("start handler received unexpected type, should be a telegram update")
+    }
+
+    result, err := bot.Send(telegram.SendMessageRequest{
+        ChatID: update.Message.Chat.ID,
+        Text:   " ¯\_(ツ)_/¯",
+    })
+
+    if err != nil {
+        log.Error("failed to send telegram message")
+    }
+
+    if !result {
+        log.Warn("send message result was false")
+    }
+})
+
+// In your webhook http handler:
+bot.ProcessUpdate(Update{}) // the update parameter should be deserialized from the request body.
+```
+
+
 ## License
 ```
 MIT License
