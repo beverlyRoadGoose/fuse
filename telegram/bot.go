@@ -137,6 +137,8 @@ func (b *Bot) RegisterWebhook(log *logrus.Entry, webhook string) (bool, error) {
 		return false, errors.Wrap(err, "failed to marshal register webhook request body")
 	}
 
+	log.Info("abcd: " + string(bodyJson))
+
 	log.WithField("body", bodyJson).Info("body json")
 
 	request, err := http.NewRequest(httpPost, url, bytes.NewBuffer(bodyJson))
