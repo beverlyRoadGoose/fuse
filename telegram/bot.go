@@ -132,9 +132,25 @@ func (b *Bot) RegisterWebhook(log *logrus.Entry, webhook string) (bool, error) {
 	url := fmt.Sprintf(telegramApiUrlFmt, b.config.Token, setWebhook)
 	log.WithField("request", requestBody).WithField("url", url).Info("set webhook url")
 
-	responseBody, err := b.makeRequest(httpPost, url, requestBody)
+	bodyJson, err := json.Marshal(requestBody)
 	if err != nil {
-		return false, errors.Wrap(err, "failed to make setWebhook request")
+		return false, errors.Wrap(err, "failed to marshal register webhook request body")
+	}
+
+	request, err := http.NewRequest(httpPost, url, bytes.NewBuffer(bodyJson))
+	if err != nil {
+		return false, errors.Wrap(err, "failed to create register webhook request")
+	}
+
+	response, err := b.httpClient.Do(request)
+	if err != nil {
+		return false, errors.Wrap(err, "register webhook http request failed")
+	}
+	defer response.Body.Close()
+
+	responseBody, err := ioutil.ReadAll(response.Body)
+	if err != nil {
+		return false, errors.Wrap(err, "failed to parse register webhook response body")
 	}
 
 	log.WithField("response", responseBody).Info("set webhook response")
@@ -174,9 +190,26 @@ func (b *Bot) Send(s bot.Sendable) (bool, error) {
 	}
 
 	url := fmt.Sprintf(telegramApiUrlFmt, b.config.Token, sendMessage)
-	responseBody, err := b.makeRequest(httpPost, url, message)
+
+	bodyJson, err := json.Marshal(message)
 	if err != nil {
-		return false, errors.Wrap(err, "failed to make sendMessage request")
+		return false, errors.Wrap(err, "failed to marshal send request")
+	}
+
+	request, err := http.NewRequest(httpPost, url, bytes.NewBuffer(bodyJson))
+	if err != nil {
+		return false, errors.Wrap(err, "failed to create send request")
+	}
+
+	response, err := b.httpClient.Do(request)
+	if err != nil {
+		return false, errors.Wrap(err, "http request failed")
+	}
+	defer response.Body.Close()
+
+	responseBody, err := ioutil.ReadAll(response.Body)
+	if err != nil {
+		return false, errors.Wrap(err, "failed to parse send response body")
 	}
 
 	var resp sendMessageResponse
@@ -186,29 +219,4 @@ func (b *Bot) Send(s bot.Sendable) (bool, error) {
 	}
 
 	return resp.Ok, nil
-}
-
-func (b *Bot) makeRequest(method, url string, body interface{}) ([]byte, error) {
-	bodyJson, err := json.Marshal(body)
-	if err != nil {
-		return nil, errors.Wrap(err, "failed to marshal request body")
-	}
-
-	request, err := http.NewRequest(method, url, bytes.NewBuffer(bodyJson))
-	if err != nil {
-		return nil, errors.Wrap(err, "failed to create request")
-	}
-
-	response, err := b.httpClient.Do(request)
-	if err != nil {
-		return nil, errors.Wrap(err, "http request failed")
-	}
-	defer response.Body.Close()
-
-	responseBody, err := ioutil.ReadAll(response.Body)
-	if err != nil {
-		return nil, errors.Wrap(err, "failed to parse response body")
-	}
-
-	return responseBody, nil
 }
