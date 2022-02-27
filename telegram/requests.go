@@ -15,7 +15,7 @@ type setWebhookResponse struct {
 // SendMessageRequest defines messages that can be sent by the bot.
 // https://core.telegram.org/bots/api#sendmessage
 type SendMessageRequest struct {
-	ChatID                   int             `json:"chat_id"`
+	ChatID                   int64           `json:"chat_id"`
 	Text                     string          `json:"text"`
 	ParseMode                string          `json:"parse_mode"`
 	Entities                 []MessageEntity `json:"entities"`
