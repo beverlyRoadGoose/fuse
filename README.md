@@ -40,7 +40,9 @@ bot.RegisterHandler("/start", func(u interface{}) {
     if !ok {
         log.Error("start handler received unexpected type, should be a telegram update")
     }
-
+    
+    // Do stuff with the update, for example send a reply:
+    
     result, err := bot.Send(telegram.SendMessageRequest{
         ChatID: update.Message.Chat.ID,
         Text:   " ¯\_(ツ)_/¯",
@@ -88,7 +90,9 @@ bot.RegisterHandler("/start", func(u interface{}) {
     if !ok {
         log.Error("start handler received unexpected type, should be a telegram update")
     }
-
+    
+    // Do stuff with the update, for example send a reply:
+    
     result, err := bot.Send(telegram.SendMessageRequest{
         ChatID: update.Message.Chat.ID,
         Text:   " ¯\_(ツ)_/¯",
@@ -106,7 +110,6 @@ bot.RegisterHandler("/start", func(u interface{}) {
 // In your webhook http handler:
 bot.ProcessUpdate(Update{}) // the update parameter should be deserialized from the request body.
 ```
-
 
 ## License
 ```
