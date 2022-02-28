@@ -1,11 +1,5 @@
 package telegram // import "heytobi.dev/fuse/telegram"
 
-// See https://core.telegram.org/bots/api#setwebhook
-type setWebhookRequest struct {
-	Url string `json:"url"`
-	// TODO add missing optional parameters
-}
-
 type setWebhookResponse struct {
 	Ok          bool   `json:"ok"`
 	Result      bool   `json:"result"`
