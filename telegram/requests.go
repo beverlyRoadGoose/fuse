@@ -35,8 +35,9 @@ type sendMessageResponse struct {
 // Webhook defines an endpoint for receiving telegram updates.
 // See https://core.telegram.org/bots/api#setwebhook
 type Webhook struct {
-	Url            string   `json:"url"`
-	IPAddress      string   `json:"ip_address"`
-	MaxConnections int      `json:"max_connections"`
-	AllowedUpdates []string `json:"allowed_updates"`
+	Url                string   `json:"url"`
+	IPAddress          string   `json:"ip_address"`
+	MaxConnections     int      `json:"max_connections"`
+	AllowedUpdates     []string `json:"allowed_updates"`
+	DropPendingUpdates bool     `json:"drop_pending_updates"`
 }
