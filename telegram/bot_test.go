@@ -121,7 +121,7 @@ func TestRegisterWebhook_ReturnErrorIfUrlIsEmpty(t *testing.T) {
 	httpClient.On("Do", mock.Anything, mock.Anything).Return(&http.Response{}, errors.New("failed"))
 
 	bot, _ := Init(&Config{Token: "test"}, httpClient)
-	registered, err := bot.RegisterWebhook("")
+	registered, err := bot.RegisterWebhook(&Webhook{Url: ""})
 
 	assert.NotNil(t, err)
 	assert.Equal(t, errMissingWebhookUrl, err)
@@ -133,7 +133,7 @@ func TestRegisterWebhook_ReturnErrorIfApiRequestFails(t *testing.T) {
 	httpClient.On("Do", mock.Anything, mock.Anything).Return(&http.Response{}, errors.New("failed"))
 
 	bot, _ := Init(&Config{Token: "test"}, httpClient)
-	result, err := bot.RegisterWebhook("webhook.url")
+	result, err := bot.RegisterWebhook(&Webhook{Url: "webhook.url"})
 
 	assert.NotNil(t, err)
 	assert.False(t, result)
@@ -148,7 +148,7 @@ func TestRegisterWebhook_RegisterSuccessfully(t *testing.T) {
 	httpClient.On("Do", mock.Anything, mock.Anything).Return(&http.Response{Body: body}, nil)
 
 	bot, _ := Init(&Config{Token: "test"}, httpClient)
-	result, err := bot.RegisterWebhook("webhook.url")
+	result, err := bot.RegisterWebhook(&Webhook{Url: "webhook.url"})
 
 	assert.True(t, result)
 	assert.Nil(t, err)
@@ -163,7 +163,7 @@ func TestRegisterWebhook_ReturnFalseIfResponseResultIsFalse(t *testing.T) {
 	httpClient.On("Do", mock.Anything, mock.Anything).Return(&http.Response{Body: body}, nil)
 
 	bot, _ := Init(&Config{Token: "test"}, httpClient)
-	result, err := bot.RegisterWebhook("webhook.url")
+	result, err := bot.RegisterWebhook(&Webhook{Url: "webhook.url"})
 
 	assert.False(t, result)
 	assert.Nil(t, err)

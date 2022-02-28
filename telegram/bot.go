@@ -10,7 +10,6 @@ import (
 	"heytobi.dev/fuse/bot"
 
 	"github.com/pkg/errors"
-	"github.com/sirupsen/logrus"
 )
 
 const (
@@ -120,30 +119,22 @@ func (b *Bot) RegisterHandler(command string, handlerFunc bot.HandlerFunc) error
 // RegisterWebhook registers the given webhook to listen for updates.
 // Returns the result of the request, True on success.
 // See https://core.telegram.org/bots/api#setwebhook
-func (b *Bot) RegisterWebhook(log *logrus.Entry, webhook string) (bool, error) {
-	if webhook == "" {
+func (b *Bot) RegisterWebhook(webhook *Webhook) (bool, error) {
+	if webhook.Url == "" {
 		return false, errMissingWebhookUrl
 	}
 
-	requestBody := setWebhookRequest{
-		Url: webhook,
-	}
-
 	url := fmt.Sprintf(telegramApiUrlFmt, b.config.Token, setWebhook)
-	log.WithField("request_body", requestBody).WithField("url", url).Info("set webhook url")
 
-	bodyJson, err := json.Marshal(requestBody)
+	bodyJson, err := json.Marshal(webhook)
 	if err != nil {
 		return false, errors.Wrap(err, "failed to marshal register webhook request body")
 	}
-
-	log.WithField("body", bodyJson).Info("body json")
 
 	request, err := http.NewRequest(httpPost, url, bytes.NewBuffer(bodyJson))
 	if err != nil {
 		return false, errors.Wrap(err, "failed to create register webhook request")
 	}
-	log.WithField("request", request).Info("set webhook url request")
 	request.Header.Set("Content-Type", "application/json")
 
 	response, err := b.httpClient.Do(request)
@@ -157,15 +148,11 @@ func (b *Bot) RegisterWebhook(log *logrus.Entry, webhook string) (bool, error) {
 		return false, errors.Wrap(err, "failed to parse register webhook response body")
 	}
 
-	log.WithField("response", responseBody).Info("set webhook response")
-
 	var resp setWebhookResponse
 	err = json.Unmarshal(responseBody, &resp)
 	if err != nil {
 		return false, errors.Wrap(err, "failed to unmarshall setWebhook response")
 	}
-
-	log.WithField("response_unmarshalled", resp).Info("set webhook response unmarshalled")
 
 	return resp.Ok, nil
 }
