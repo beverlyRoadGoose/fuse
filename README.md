@@ -18,6 +18,11 @@ Fuse is a Go library for developing [Telegram](https://telegram.org/) bots, usin
 you@pc:~$ go get -u heytobi.dev/fuse
 ```
 
+## Current Features
+✔️ Register Webhooks  
+✔️ Recieve updates through Webhooks  
+✔️ Send Messages  
+
 ## Usage
 ### Getting Updates through long polling
 #### Steps
@@ -112,11 +117,6 @@ bot.RegisterHandler("/start", func(u interface{}) {
 // In your webhook http handler:
 bot.ProcessUpdate(Update{}) // the update parameter should be deserialized from the request body.
 ```
-
-## Current Features
-✔️ Register Webhooks  
-✔️ Recieve updates through Webhooks  
-✔️ Send Messages  
 
 ## License
 ```
