@@ -22,7 +22,7 @@ const (
 type Poller struct {
 	httpClient     httpClient
 	cronSchedule   string
-	updatesChan    chan<- Update
+	updatesChan    chan Update
 	updatesRequest *http.Request
 }
 
@@ -98,6 +98,6 @@ func (p *Poller) start() error {
 	return nil
 }
 
-func (p *Poller) getUpdatesChanel() chan<- Update {
+func (p *Poller) getUpdatesChanel() <-chan Update {
 	return p.updatesChan
 }
