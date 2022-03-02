@@ -41,3 +41,16 @@ type Webhook struct {
 	AllowedUpdates     []string `json:"allowed_updates"`
 	DropPendingUpdates bool     `json:"drop_pending_updates"`
 }
+
+// See https://core.telegram.org/bots/api#getupdates
+type getUpdatesRequest struct {
+	Offset         int      `json:"offset"`
+	Limit          int      `json:"limit"`
+	Timeout        int      `json:"timeout"`
+	AllowedUpdates []string `json:"allowed_updates"`
+}
+
+type getUpdatesResponse struct {
+	Ok     bool     `json:"ok"`
+	Result []Update `json:"result"`
+}

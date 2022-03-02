@@ -4,10 +4,9 @@ import (
 	"bytes"
 	"encoding/json"
 	"fmt"
+	"github.com/sirupsen/logrus"
 	"io/ioutil"
 	"net/http"
-
-	"heytobi.dev/fuse/bot"
 
 	"github.com/pkg/errors"
 )
@@ -18,44 +17,56 @@ const (
 
 	telegramApiUrlFmt = "https://api.telegram.org/bot%s/%s"
 
-	// Bot api methods
-	//getUpdates  = "getUpdates"
-	setWebhook  = "setWebhook"
-	sendMessage = "sendMessage"
-
 	httpPost = "POST"
 )
 
 var (
-	errMissingToken        = errors.New("missing API token")
-	errMissingWebhookUrl   = errors.New("a url is required to register a webhook")
-	errMissingConfig       = errors.New("a configuration object is required to initialize a Bot connection")
-	errMissingHttpClient   = errors.New("an http client is required to initialize a Bot connection")
-	errHandlerExists       = errors.New("an handler already exists for this command")
-	errInvalidUpdateMethod = errors.New("invalid update method")
-	errInvalidUpdateType   = errors.New("invalid type passed to ProcessUpdate function")
-	errInvalidSendableType = errors.New("invalid type passed to Send function")
+	errEmptyCommand            = errors.New("empty command")
+	errNilUpdate               = errors.New("update cannot be nil")
+	errNilMessageRequest       = errors.New("message cannot be nil")
+	errMissingToken            = errors.New("missing API token")
+	errMissingWebhookUrl       = errors.New("a url is required to register a webhook")
+	errNilHttpClient           = errors.New("an http client is required to initialize a Bot connection")
+	errNilPoller               = errors.New("a poller is required when using getUpdates")
+	errNilConfig               = errors.New("a configuration object is required to initialize a Bot connection")
+	errHandlerExists           = errors.New("an handler already exists for this command")
+	errInvalidUpdateMethod     = errors.New("invalid update method")
+	errDefaultHandlerExists    = errors.New("a default handler is already registered")
+	errWrongUpdateMethodConfig = errors.New("bot is not configured to use webhook update method")
 )
 
 type httpClient interface {
 	Do(req *http.Request) (*http.Response, error)
 }
 
-// Config defines the configurable parameters of a Bot.
+type poller interface {
+	start() error
+	getUpdatesChannel() <-chan Update
+}
+
+// HandlerFunc defines functions that can handle bot commands / messages.
+type HandlerFunc func(update *Update)
+
+// Config defines Telegrams configurable parameters.
 type Config struct {
-	Token          string
-	UpdateMethod   string
-	PollingTimeout int
+	Token               string
+	UpdateMethod        string
+	PollingCronSchedule string
+	PollingTimeout      int
+	PollingUpdatesLimit int
+	AllowedUpdates      []string `json:"allowed_updates"`
 }
 
 // Bot defines the attributes of a Telegram Bot.
 type Bot struct {
-	config     *Config
-	httpClient httpClient
-	handlers   map[string]bot.HandlerFunc
+	config         *Config
+	httpClient     httpClient
+	handlers       map[string]HandlerFunc
+	defaultHandler HandlerFunc
+	poller         poller
 }
 
-// Init initializes a Bot instance.
+// NewBot initializes a Bot instance.
 //
 // If no UpdateMethod is specified in the config, it defaults to getUpdates.
 // See https://core.telegram.org/bots/api#getting-updates.
@@ -66,9 +77,9 @@ type Bot struct {
 //  - The given config is nil
 //  - The configured UpdateMethod is invalid.
 //  - The given serviceProvider is nil
-func Init(config *Config, httpClient httpClient) (*Bot, error) {
+func NewBot(config *Config, httpClient httpClient) (*Bot, error) {
 	if config == nil {
-		return nil, errMissingConfig
+		return nil, errNilConfig
 	}
 
 	if config.Token == "" {
@@ -84,34 +95,47 @@ func Init(config *Config, httpClient httpClient) (*Bot, error) {
 	}
 
 	if httpClient == nil {
-		return nil, errMissingHttpClient
+		return nil, errNilHttpClient
 	}
 
 	bot := &Bot{
 		config:     config,
 		httpClient: httpClient,
-		handlers:   make(map[string]bot.HandlerFunc),
+		handlers:   make(map[string]HandlerFunc),
 	}
 
 	return bot, nil
 }
 
-// Start starts the process of polling for updates from Bot.
-func (b *Bot) Start() error {
-	//if b.config.UpdateMethod == UpdateMethodGetUpdates {
-	// start polling here
-	//}
-
-	return nil
+// WithPoller sets the poller used to continuously query for updates
+func (b *Bot) WithPoller(p poller) *Bot {
+	b.poller = p
+	return b
 }
 
-// RegisterHandler registers the given handler function to handle invocations of the given command.
-func (b *Bot) RegisterHandler(command string, handlerFunc bot.HandlerFunc) error {
-	if _, handlerExists := b.handlers[command]; handlerExists {
-		return errHandlerExists
-	}
+// Start starts the process of polling for updates from Telegram.
+func (b *Bot) Start() error {
+	if b.config.UpdateMethod == UpdateMethodGetUpdates {
+		if b.poller == nil {
+			return errNilPoller
+		}
 
-	b.handlers[command] = handlerFunc
+		updatesChan := b.poller.getUpdatesChannel()
+		go func() {
+			for update := range updatesChan {
+				update := &update
+				err := b.ProcessUpdate(update)
+				if err != nil {
+					logrus.WithError(err).Error("failed to process update")
+				}
+			}
+		}()
+
+		err := b.poller.start()
+		if err != nil {
+			return errors.Wrap(err, "failed to start poller")
+		}
+	}
 
 	return nil
 }
@@ -120,11 +144,19 @@ func (b *Bot) RegisterHandler(command string, handlerFunc bot.HandlerFunc) error
 // Returns the result of the request, True on success.
 // See https://core.telegram.org/bots/api#setwebhook
 func (b *Bot) RegisterWebhook(webhook *Webhook) (bool, error) {
+	if b.config.UpdateMethod == UpdateMethodGetUpdates {
+		return false, errWrongUpdateMethodConfig
+	}
+
 	if webhook.Url == "" {
 		return false, errMissingWebhookUrl
 	}
 
 	url := fmt.Sprintf(telegramApiUrlFmt, b.config.Token, setWebhook)
+
+	if webhook.AllowedUpdates == nil {
+		webhook.AllowedUpdates = b.config.AllowedUpdates
+	}
 
 	bodyJson, err := json.Marshal(webhook)
 	if err != nil {
@@ -157,16 +189,47 @@ func (b *Bot) RegisterWebhook(webhook *Webhook) (bool, error) {
 	return resp.Ok, nil
 }
 
+// RegisterDefaultHandler registers the given handler function as the default. The default handler handles all
+//updates that don't match a specific command that is assigned its own handler in RegisterHandler.
+func (b *Bot) RegisterDefaultHandler(handler HandlerFunc) error {
+	if b.defaultHandler != nil {
+		return errDefaultHandlerExists
+	}
+
+	b.defaultHandler = handler
+
+	return nil
+}
+
+// RegisterHandler registers the given handler function to handle invocations of the given command.
+func (b *Bot) RegisterHandler(command string, handlerFunc HandlerFunc) error {
+	if command == "" {
+		return errEmptyCommand
+	}
+
+	if _, handlerExists := b.handlers[command]; handlerExists {
+		return errHandlerExists
+	}
+
+	b.handlers[command] = handlerFunc
+
+	return nil
+}
+
 // ProcessUpdates processes updates from telegram.
-func (b *Bot) ProcessUpdate(u bot.Update) error {
-	update, isUpdate := u.(Update)
-	if !isUpdate {
-		return errInvalidUpdateType
+func (b *Bot) ProcessUpdate(update *Update) error {
+	if update == nil {
+		return errNilUpdate
 	}
 
 	if update.Message != nil {
 		if handler, hasHandler := b.handlers[update.Message.Text]; hasHandler {
 			handler(update)
+			return nil
+		}
+
+		if b.defaultHandler != nil {
+			b.defaultHandler(update)
 		}
 	}
 
@@ -174,10 +237,9 @@ func (b *Bot) ProcessUpdate(u bot.Update) error {
 }
 
 // Send sends a message to the user.
-func (b *Bot) Send(s bot.Sendable) (bool, error) {
-	message, isMessage := s.(SendMessageRequest)
-	if !isMessage {
-		return false, errInvalidSendableType
+func (b *Bot) Send(message *SendMessageRequest) (bool, error) {
+	if message == nil {
+		return false, errNilMessageRequest
 	}
 
 	url := fmt.Sprintf(telegramApiUrlFmt, b.config.Token, sendMessage)
