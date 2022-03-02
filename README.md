@@ -20,7 +20,7 @@ you@pc:~$ go get -u heytobi.dev/fuse
 
 ## Current Features
 ✔️ Register Webhooks  
-✔️ Recieve updates through Webhooks  
+✔️ Receive updates through Webhooks  
 ✔️ Send Messages  
 
 ## Usage
@@ -33,14 +33,23 @@ you@pc:~$ go get -u heytobi.dev/fuse
 ```go
 httpClient := &http.Client{}
 config := &telegram.Config{
-    Token: "<YOUR TOKEN>",
-    UpdateMethod: telegram.UpdateMethodGetUpdates,
+    Token:               "<YOUR TOKEN>",
+    UpdateMethod:        telegram.UpdateMethodGetUpdates,
+    PollingCronSchedule: "*/1 * * * *",
+    PollingTimeout:      30,
 }
 
-bot, err := telegram.Init(config, httpClient)
+poller, err := telegram.NewPoller(telegramConfig, httpClient)
 if err != nil {
-    log.Fatal("failed to initialize telegram bot")
+return nil, errors.New("failed to initialize telegram poller")
 }
+
+bot, err := telegram.NewBot(telegramConfig, httpClient)
+if err != nil {
+return nil, errors.New("failed to initialize telegram instance")
+}
+
+bot = bot.WithPoller(poller)
 
 bot.RegisterHandler("/start", func(u interface{}) {
     update, ok := u.(telegram.Update)
