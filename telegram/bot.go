@@ -4,8 +4,8 @@ import (
 	"bytes"
 	"encoding/json"
 	"fmt"
+	"github.com/sirupsen/logrus"
 	"io/ioutil"
-	"log"
 	"net/http"
 
 	"github.com/pkg/errors"
@@ -126,7 +126,7 @@ func (b *Bot) Start() error {
 				update := &update
 				err := b.ProcessUpdate(update)
 				if err != nil {
-					log.Printf("failed to process update: %s", err.Error())
+					logrus.WithError(err).Error("failed to process update")
 				}
 			}
 		}()

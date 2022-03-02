@@ -4,8 +4,8 @@ import (
 	"bytes"
 	"encoding/json"
 	"fmt"
+	"github.com/sirupsen/logrus"
 	"io/ioutil"
-	"log"
 	"net/http"
 	"time"
 
@@ -70,22 +70,22 @@ func (p *Poller) start() error {
 	_, err := scheduler.Cron(p.cronSchedule).Do(func() {
 		response, err := p.httpClient.Do(p.updatesRequest)
 		if err != nil {
-			log.Printf("getUpdates call failed: %s", err.Error())
+			logrus.WithError(err).Error("getUpdates call failed")
 		}
 		defer response.Body.Close()
 
 		responseBody, err := ioutil.ReadAll(response.Body)
 		if err != nil {
-			log.Printf("failed to parse getUpdates response body: %s", err.Error())
+			logrus.WithError(err).Error("failed to parse getUpdates response body")
 		}
 
-		var updates []Update
+		var updates getUpdatesResponse
 		err = json.Unmarshal(responseBody, &updates)
 		if err != nil {
-			log.Printf("failed to unmarshal getUpdates response: %s", err.Error())
+			logrus.WithError(err).WithField("response", string(responseBody[:])).Error("failed to unmarshal getUpdates response")
 		}
 
-		for _, update := range updates {
+		for _, update := range updates.Result {
 			p.updatesChan <- update
 		}
 	})

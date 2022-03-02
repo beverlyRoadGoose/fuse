@@ -49,3 +49,8 @@ type getUpdatesRequest struct {
 	Timeout        int      `json:"timeout"`
 	AllowedUpdates []string `json:"allowed_updates"`
 }
+
+type getUpdatesResponse struct {
+	Ok     bool     `json:"ok"`
+	Result []Update `json:"result"`
+}
