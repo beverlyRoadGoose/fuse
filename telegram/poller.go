@@ -26,7 +26,11 @@ type Poller struct {
 	updatesRequest *http.Request
 }
 
-func NewPoller(httpClient httpClient, config *Config) (*Poller, error) {
+func NewPoller(config *Config, httpClient httpClient) (*Poller, error) {
+	if config == nil {
+		return nil, errNilConfig
+	}
+
 	if config.Token == "" {
 		return nil, errMissingToken
 	}

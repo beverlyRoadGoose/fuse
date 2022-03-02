@@ -12,7 +12,7 @@ import (
 	"github.com/stretchr/testify/mock"
 )
 
-func TestInit_ReturnErrorIfConfigIsNil(t *testing.T) {
+func TestNewBot_ReturnErrorIfConfigIsNil(t *testing.T) {
 	bot, err := NewBot(nil, nil)
 
 	assert.Nil(t, bot)
@@ -20,7 +20,7 @@ func TestInit_ReturnErrorIfConfigIsNil(t *testing.T) {
 	assert.Equal(t, errNilConfig, err)
 }
 
-func TestInit_ReturnErrorIfTokenIsMissing(t *testing.T) {
+func TestNewBot_ReturnErrorIfTokenIsMissing(t *testing.T) {
 	bot, err := NewBot(&Config{}, nil)
 
 	assert.Nil(t, bot)
@@ -28,14 +28,14 @@ func TestInit_ReturnErrorIfTokenIsMissing(t *testing.T) {
 	assert.Equal(t, errMissingToken, err)
 }
 
-func TestInit_DefaultToGetUpdatesIfNoUpdateMethodIsSpecified(t *testing.T) {
+func TestNewBot_DefaultToGetUpdatesIfNoUpdateMethodIsSpecified(t *testing.T) {
 	bot, err := NewBot(&Config{Token: "test"}, &mockHttpClient{})
 
 	assert.Nil(t, err)
 	assert.Equal(t, UpdateMethodGetUpdates, bot.config.UpdateMethod)
 }
 
-func TestInit_ReturnErrorIfUpdateMethodIsInvalid(t *testing.T) {
+func TestNewBot_ReturnErrorIfUpdateMethodIsInvalid(t *testing.T) {
 	bot, err := NewBot(
 		&Config{
 			Token:        "test",
@@ -49,7 +49,7 @@ func TestInit_ReturnErrorIfUpdateMethodIsInvalid(t *testing.T) {
 	assert.Equal(t, errInvalidUpdateMethod, err)
 }
 
-func TestInit_ReturnErrorIfHttpClientIsMissing(t *testing.T) {
+func TestNewBot_ReturnErrorIfHttpClientIsMissing(t *testing.T) {
 	bot, err := NewBot(&Config{Token: "test"}, nil)
 
 	assert.Nil(t, bot)
@@ -57,7 +57,7 @@ func TestInit_ReturnErrorIfHttpClientIsMissing(t *testing.T) {
 	assert.Equal(t, errNilHttpClient, err)
 }
 
-func TestInit_InitializeSuccessfully(t *testing.T) {
+func TestNewBot_NewBotializeSuccessfully(t *testing.T) {
 	bot, err := NewBot(&Config{Token: "test"}, &mockHttpClient{})
 
 	assert.NotNil(t, bot)
