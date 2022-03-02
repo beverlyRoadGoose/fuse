@@ -41,7 +41,7 @@ type httpClient interface {
 
 type poller interface {
 	start() error
-	getUpdatesChanel() <-chan Update
+	getUpdatesChanel() chan<- Update
 }
 
 // HandlerFunc defines functions that can handle bot commands / messages.
