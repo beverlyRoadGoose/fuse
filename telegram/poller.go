@@ -20,10 +20,11 @@ const (
 // A poller is responsible for continuously checking for updates from Telegram using the getUpdates method.
 // See https://core.telegram.org/bots/api#getupdates
 type Poller struct {
-	httpClient     httpClient
-	cronSchedule   string
-	updatesChan    chan Update
-	updatesRequest *http.Request
+	config       *Config
+	httpClient   httpClient
+	cronSchedule string
+	updatesChan  chan Update
+	offset       int
 }
 
 func NewPoller(config *Config, httpClient httpClient) (*Poller, error) {
@@ -40,35 +41,41 @@ func NewPoller(config *Config, httpClient httpClient) (*Poller, error) {
 		cronSchedule = defaultCronSchedule
 	}
 
-	url := fmt.Sprintf(telegramApiUrlFmt, config.Token, getUpdates)
-
-	requestBody, err := json.Marshal(getUpdatesRequest{
-		Limit:          config.PollingUpdatesLimit,
-		Timeout:        config.PollingTimeout,
-		AllowedUpdates: config.AllowedUpdates,
-	})
-	if err != nil {
-		return nil, errors.Wrap(err, "failed to construct getUpdates request body")
-	}
-
-	request, err := http.NewRequest(httpPost, url, bytes.NewBuffer(requestBody))
-	if err != nil {
-		return nil, errors.Wrap(err, "failed to create getUpdates request")
-	}
-	request.Header.Set("Content-Type", "application/json")
-
 	return &Poller{
-		httpClient:     httpClient,
-		cronSchedule:   cronSchedule,
-		updatesChan:    make(chan Update),
-		updatesRequest: request,
+		httpClient:   httpClient,
+		config:       config,
+		cronSchedule: cronSchedule,
+		updatesChan:  make(chan Update),
 	}, nil
 }
 
 func (p *Poller) start() error {
 	scheduler := gocron.NewScheduler(time.UTC)
 	_, err := scheduler.Cron(p.cronSchedule).Do(func() {
-		response, err := p.httpClient.Do(p.updatesRequest)
+		url := fmt.Sprintf(telegramApiUrlFmt, p.config.Token, getUpdates)
+
+		requestBody := getUpdatesRequest{
+			Limit:          p.config.PollingUpdatesLimit,
+			Timeout:        p.config.PollingTimeout,
+			AllowedUpdates: p.config.AllowedUpdates,
+		}
+
+		if p.offset > 0 {
+			requestBody.Offset = p.offset
+		}
+
+		bodyJson, err := json.Marshal(requestBody)
+		if err != nil {
+			logrus.WithError(err).Error("failed to construct getUpdates request body")
+		}
+
+		request, err := http.NewRequest(httpPost, url, bytes.NewBuffer(bodyJson))
+		if err != nil {
+			logrus.WithError(err).Error("failed to creat getUpdates request")
+		}
+		request.Header.Set("Content-Type", "application/json")
+
+		response, err := p.httpClient.Do(request)
 		if err != nil {
 			logrus.WithError(err).Error("getUpdates call failed")
 		}
@@ -87,6 +94,7 @@ func (p *Poller) start() error {
 
 		for _, update := range updates.Result {
 			p.updatesChan <- update
+			p.offset = update.ID + 1
 		}
 	})
 	if err != nil {
