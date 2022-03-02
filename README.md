@@ -37,6 +37,7 @@ config := &telegram.Config{
     UpdateMethod:        telegram.UpdateMethodGetUpdates,
     PollingCronSchedule: "*/1 * * * *",
     PollingTimeout:      30,
+    PollingUpdatesLimit: 100,
 }
 
 poller, err := telegram.NewPoller(telegramConfig, httpClient)
