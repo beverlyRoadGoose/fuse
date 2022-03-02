@@ -52,47 +52,12 @@ func NewPoller(config *Config, httpClient httpClient) (*Poller, error) {
 func (p *Poller) start() error {
 	scheduler := gocron.NewScheduler(time.UTC)
 	_, err := scheduler.Cron(p.cronSchedule).Do(func() {
-		url := fmt.Sprintf(telegramApiUrlFmt, p.config.Token, getUpdates)
-
-		requestBody := getUpdatesRequest{
-			Limit:          p.config.PollingUpdatesLimit,
-			Timeout:        p.config.PollingTimeout,
-			AllowedUpdates: p.config.AllowedUpdates,
-		}
-
-		if p.offset > 0 {
-			requestBody.Offset = p.offset
-		}
-
-		bodyJson, err := json.Marshal(requestBody)
+		updates, err := p.getUpdates()
 		if err != nil {
-			logrus.WithError(err).Error("failed to construct getUpdates request body")
+			logrus.WithError(err).Error("failed to get updates")
 		}
 
-		request, err := http.NewRequest(httpPost, url, bytes.NewBuffer(bodyJson))
-		if err != nil {
-			logrus.WithError(err).Error("failed to creat getUpdates request")
-		}
-		request.Header.Set("Content-Type", "application/json")
-
-		response, err := p.httpClient.Do(request)
-		if err != nil {
-			logrus.WithError(err).Error("getUpdates call failed")
-		}
-		defer response.Body.Close()
-
-		responseBody, err := ioutil.ReadAll(response.Body)
-		if err != nil {
-			logrus.WithError(err).Error("failed to parse getUpdates response body")
-		}
-
-		var updates getUpdatesResponse
-		err = json.Unmarshal(responseBody, &updates)
-		if err != nil {
-			logrus.WithError(err).WithField("response", string(responseBody[:])).Error("failed to unmarshal getUpdates response")
-		}
-
-		for _, update := range updates.Result {
+		for _, update := range updates {
 			p.updatesChan <- update
 			p.offset = update.ID + 1
 		}
@@ -106,6 +71,50 @@ func (p *Poller) start() error {
 	return nil
 }
 
-func (p *Poller) getUpdatesChanel() <-chan Update {
+func (p *Poller) getUpdatesChannel() <-chan Update {
 	return p.updatesChan
+}
+
+func (p *Poller) getUpdates() ([]Update, error) {
+	url := fmt.Sprintf(telegramApiUrlFmt, p.config.Token, getUpdates)
+
+	requestBody := getUpdatesRequest{
+		Limit:          p.config.PollingUpdatesLimit,
+		Timeout:        p.config.PollingTimeout,
+		AllowedUpdates: p.config.AllowedUpdates,
+	}
+
+	if p.offset > 0 {
+		requestBody.Offset = p.offset
+	}
+
+	bodyJson, err := json.Marshal(requestBody)
+	if err != nil {
+		return nil, errors.Wrap(err, "failed to construct getUpdates request body")
+	}
+
+	request, err := http.NewRequest(httpPost, url, bytes.NewBuffer(bodyJson))
+	if err != nil {
+		return nil, errors.Wrap(err, "failed to create getUpdates request")
+	}
+	request.Header.Set("Content-Type", "application/json")
+
+	response, err := p.httpClient.Do(request)
+	if err != nil {
+		return nil, errors.Wrap(err, "getUpdate call failed")
+	}
+	defer response.Body.Close()
+
+	responseBody, err := ioutil.ReadAll(response.Body)
+	if err != nil {
+		return nil, errors.Wrap(err, "failed to parse getUpdates response body")
+	}
+
+	var updates getUpdatesResponse
+	err = json.Unmarshal(responseBody, &updates)
+	if err != nil {
+		return nil, errors.Wrap(err, fmt.Sprintf("failed to unmarshal getUpdates response: %s", string(responseBody[:])))
+	}
+
+	return updates.Result, nil
 }

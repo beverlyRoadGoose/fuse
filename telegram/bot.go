@@ -41,7 +41,7 @@ type httpClient interface {
 
 type poller interface {
 	start() error
-	getUpdatesChanel() <-chan Update
+	getUpdatesChannel() <-chan Update
 }
 
 // HandlerFunc defines functions that can handle bot commands / messages.
@@ -120,7 +120,7 @@ func (b *Bot) Start() error {
 			return errNilPoller
 		}
 
-		updatesChan := b.poller.getUpdatesChanel()
+		updatesChan := b.poller.getUpdatesChannel()
 		go func() {
 			for update := range updatesChan {
 				update := &update
