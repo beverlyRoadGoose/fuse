@@ -76,7 +76,6 @@ type Bot struct {
 // It returns an error if any of these conditions are met:
 //  - The given config is nil
 //  - The configured UpdateMethod is invalid.
-//  - The given serviceProvider is nil
 func NewBot(config *Config, httpClient httpClient) (*Bot, error) {
 	if config == nil {
 		return nil, errNilConfig
