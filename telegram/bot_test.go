@@ -13,15 +13,15 @@ import (
 )
 
 func TestInit_ReturnErrorIfConfigIsNil(t *testing.T) {
-	bot, err := Init(nil, nil)
+	bot, err := NewBot(nil, nil)
 
 	assert.Nil(t, bot)
 	assert.Error(t, err)
-	assert.Equal(t, errMissingConfig, err)
+	assert.Equal(t, errNilConfig, err)
 }
 
 func TestInit_ReturnErrorIfTokenIsMissing(t *testing.T) {
-	bot, err := Init(&Config{}, nil)
+	bot, err := NewBot(&Config{}, nil)
 
 	assert.Nil(t, bot)
 	assert.Error(t, err)
@@ -29,14 +29,14 @@ func TestInit_ReturnErrorIfTokenIsMissing(t *testing.T) {
 }
 
 func TestInit_DefaultToGetUpdatesIfNoUpdateMethodIsSpecified(t *testing.T) {
-	bot, err := Init(&Config{Token: "test"}, &mockHttpClient{})
+	bot, err := NewBot(&Config{Token: "test"}, &mockHttpClient{})
 
 	assert.Nil(t, err)
 	assert.Equal(t, UpdateMethodGetUpdates, bot.config.UpdateMethod)
 }
 
 func TestInit_ReturnErrorIfUpdateMethodIsInvalid(t *testing.T) {
-	bot, err := Init(
+	bot, err := NewBot(
 		&Config{
 			Token:        "test",
 			UpdateMethod: "invalid",
@@ -50,41 +50,29 @@ func TestInit_ReturnErrorIfUpdateMethodIsInvalid(t *testing.T) {
 }
 
 func TestInit_ReturnErrorIfHttpClientIsMissing(t *testing.T) {
-	bot, err := Init(&Config{Token: "test"}, nil)
+	bot, err := NewBot(&Config{Token: "test"}, nil)
 
 	assert.Nil(t, bot)
 	assert.Error(t, err)
-	assert.Equal(t, errMissingHttpClient, err)
+	assert.Equal(t, errNilHttpClient, err)
 }
 
 func TestInit_InitializeSuccessfully(t *testing.T) {
-	bot, err := Init(&Config{Token: "test"}, &mockHttpClient{})
+	bot, err := NewBot(&Config{Token: "test"}, &mockHttpClient{})
 
 	assert.NotNil(t, bot)
 	assert.Nil(t, err)
 }
 
-func TestInit_InitializePollerIfUpdateMethodIsNotWebhook(t *testing.T) {
-	bot, _ := Init(&Config{Token: "test"}, &mockHttpClient{})
-
-	assert.NotNil(t, bot.poller)
-}
-
-func TestInit_DoNotInitializePollerIfUpdateMethodIsWebhook(t *testing.T) {
-	bot, _ := Init(&Config{Token: "test", UpdateMethod: UpdateMethodWebhook}, &mockHttpClient{})
-
-	assert.Nil(t, bot.poller)
-}
-
 func TestStart_StartSuccessfully(t *testing.T) {
-	bot, _ := Init(&Config{Token: "test"}, &mockHttpClient{})
+	bot, _ := NewBot(&Config{Token: "test", UpdateMethod: UpdateMethodWebhook}, &mockHttpClient{})
 	err := bot.Start()
 
 	assert.Nil(t, err)
 }
 
 func TestSend_ReturnErrorIfMessageIsNil(t *testing.T) {
-	bot, _ := Init(&Config{Token: "test"}, &mockHttpClient{})
+	bot, _ := NewBot(&Config{Token: "test"}, &mockHttpClient{})
 	result, err := bot.Send(nil)
 
 	assert.Error(t, err)
@@ -100,7 +88,7 @@ func TestSend_SendSuccessfully(t *testing.T) {
 	httpClient := &mockHttpClient{}
 	httpClient.On("Do", mock.Anything, mock.Anything).Return(&http.Response{Body: body}, nil)
 
-	bot, _ := Init(&Config{Token: "test"}, httpClient)
+	bot, _ := NewBot(&Config{Token: "test"}, httpClient)
 	result, err := bot.Send(&SendMessageRequest{
 		ChatID: 0,
 		Text:   "test",
@@ -111,7 +99,7 @@ func TestSend_SendSuccessfully(t *testing.T) {
 }
 
 func TestRegisterHandler_RegisterHandlerSuccessfully(t *testing.T) {
-	bot, _ := Init(&Config{Token: "test"}, &mockHttpClient{})
+	bot, _ := NewBot(&Config{Token: "test"}, &mockHttpClient{})
 	err := bot.RegisterHandler("/start", func(update *Update) {})
 
 	assert.Nil(t, err)
@@ -119,7 +107,7 @@ func TestRegisterHandler_RegisterHandlerSuccessfully(t *testing.T) {
 }
 
 func TestRegisterHandler_ReturnErrorIfHandlerExists(t *testing.T) {
-	bot, _ := Init(&Config{Token: "test"}, &mockHttpClient{})
+	bot, _ := NewBot(&Config{Token: "test"}, &mockHttpClient{})
 	_ = bot.RegisterHandler("/start", func(update *Update) {})
 
 	// try registering another handler for the same command
@@ -130,7 +118,7 @@ func TestRegisterHandler_ReturnErrorIfHandlerExists(t *testing.T) {
 }
 
 func TestRegisterDefaultHandler_RegisterHandlerSuccessfully(t *testing.T) {
-	bot, _ := Init(&Config{Token: "test"}, &mockHttpClient{})
+	bot, _ := NewBot(&Config{Token: "test"}, &mockHttpClient{})
 	err := bot.RegisterDefaultHandler(func(update *Update) {})
 
 	assert.Nil(t, err)
@@ -138,7 +126,7 @@ func TestRegisterDefaultHandler_RegisterHandlerSuccessfully(t *testing.T) {
 }
 
 func TestRegisterDefaultHandler_ReturnErrorIfHandlerExists(t *testing.T) {
-	bot, _ := Init(&Config{Token: "test"}, &mockHttpClient{})
+	bot, _ := NewBot(&Config{Token: "test"}, &mockHttpClient{})
 	_ = bot.RegisterDefaultHandler(func(update *Update) {})
 	err := bot.RegisterDefaultHandler(func(update *Update) {})
 
@@ -150,7 +138,7 @@ func TestRegisterWebhook_ReturnErrorIfUrlIsEmpty(t *testing.T) {
 	httpClient := &mockHttpClient{}
 	httpClient.On("Do", mock.Anything, mock.Anything).Return(&http.Response{}, errors.New("failed"))
 
-	bot, _ := Init(&Config{Token: "test", UpdateMethod: UpdateMethodWebhook}, httpClient)
+	bot, _ := NewBot(&Config{Token: "test", UpdateMethod: UpdateMethodWebhook}, httpClient)
 	registered, err := bot.RegisterWebhook(&Webhook{Url: ""})
 
 	assert.NotNil(t, err)
@@ -159,7 +147,7 @@ func TestRegisterWebhook_ReturnErrorIfUrlIsEmpty(t *testing.T) {
 }
 
 func TestRegisterWebhook_ReturnErrorIfUpdateMethodIsNotWebhook(t *testing.T) {
-	bot, _ := Init(&Config{Token: "test"}, &mockHttpClient{})
+	bot, _ := NewBot(&Config{Token: "test"}, &mockHttpClient{})
 	registered, err := bot.RegisterWebhook(&Webhook{Url: "url.test"})
 
 	assert.NotNil(t, err)
@@ -171,7 +159,7 @@ func TestRegisterWebhook_ReturnErrorIfApiRequestFails(t *testing.T) {
 	httpClient := &mockHttpClient{}
 	httpClient.On("Do", mock.Anything, mock.Anything).Return(&http.Response{}, errors.New("failed"))
 
-	bot, _ := Init(&Config{Token: "test", UpdateMethod: UpdateMethodWebhook}, httpClient)
+	bot, _ := NewBot(&Config{Token: "test", UpdateMethod: UpdateMethodWebhook}, httpClient)
 	result, err := bot.RegisterWebhook(&Webhook{Url: "webhook.url"})
 
 	assert.NotNil(t, err)
@@ -186,7 +174,7 @@ func TestRegisterWebhook_RegisterSuccessfully(t *testing.T) {
 	httpClient := &mockHttpClient{}
 	httpClient.On("Do", mock.Anything, mock.Anything).Return(&http.Response{Body: body}, nil)
 
-	bot, _ := Init(&Config{Token: "test", UpdateMethod: UpdateMethodWebhook}, httpClient)
+	bot, _ := NewBot(&Config{Token: "test", UpdateMethod: UpdateMethodWebhook}, httpClient)
 	result, err := bot.RegisterWebhook(&Webhook{Url: "webhook.url"})
 
 	assert.True(t, result)
@@ -201,7 +189,7 @@ func TestRegisterWebhook_ReturnFalseIfResponseResultIsFalse(t *testing.T) {
 	httpClient := &mockHttpClient{}
 	httpClient.On("Do", mock.Anything, mock.Anything).Return(&http.Response{Body: body}, nil)
 
-	bot, _ := Init(&Config{Token: "test", UpdateMethod: UpdateMethodWebhook}, httpClient)
+	bot, _ := NewBot(&Config{Token: "test", UpdateMethod: UpdateMethodWebhook}, httpClient)
 	result, err := bot.RegisterWebhook(&Webhook{Url: "webhook.url"})
 
 	assert.False(t, result)
@@ -209,7 +197,7 @@ func TestRegisterWebhook_ReturnFalseIfResponseResultIsFalse(t *testing.T) {
 }
 
 func TestProcessUpdate_ReturnErrorIfUpdateIsNil(t *testing.T) {
-	bot, _ := Init(&Config{Token: "test"}, &mockHttpClient{})
+	bot, _ := NewBot(&Config{Token: "test"}, &mockHttpClient{})
 	err := bot.ProcessUpdate(nil)
 
 	assert.Error(t, err)
@@ -217,7 +205,7 @@ func TestProcessUpdate_ReturnErrorIfUpdateIsNil(t *testing.T) {
 }
 
 func TestProcessUpdate_DontReturnErrorIfGivenValidUpdateType(t *testing.T) {
-	bot, _ := Init(&Config{Token: "test"}, &mockHttpClient{})
+	bot, _ := NewBot(&Config{Token: "test"}, &mockHttpClient{})
 	err := bot.ProcessUpdate(&Update{
 		Message: &Message{Text: "/test"},
 	})

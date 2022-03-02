@@ -5,6 +5,7 @@ import (
 	"encoding/json"
 	"fmt"
 	"io/ioutil"
+	"log"
 	"net/http"
 
 	"github.com/pkg/errors"
@@ -16,11 +17,6 @@ const (
 
 	telegramApiUrlFmt = "https://api.telegram.org/bot%s/%s"
 
-	// Bot api methods
-	getUpdates  = "getUpdates"
-	setWebhook  = "setWebhook"
-	sendMessage = "sendMessage"
-
 	httpPost = "POST"
 )
 
@@ -30,8 +26,9 @@ var (
 	errNilMessageRequest       = errors.New("message cannot be nil")
 	errMissingToken            = errors.New("missing API token")
 	errMissingWebhookUrl       = errors.New("a url is required to register a webhook")
-	errMissingHttpClient       = errors.New("an http client is required to initialize a Bot connection")
-	errMissingConfig           = errors.New("a configuration object is required to initialize a Bot connection")
+	errNilHttpClient           = errors.New("an http client is required to initialize a Bot connection")
+	errNilPoller               = errors.New("a poller is required when using getUpdates")
+	errNilConfig               = errors.New("a configuration object is required to initialize a Bot connection")
 	errHandlerExists           = errors.New("an handler already exists for this command")
 	errInvalidUpdateMethod     = errors.New("invalid update method")
 	errDefaultHandlerExists    = errors.New("a default handler is already registered")
@@ -42,15 +39,21 @@ type httpClient interface {
 	Do(req *http.Request) (*http.Response, error)
 }
 
+type poller interface {
+	start() error
+	getUpdatesChanel() <-chan Update
+}
+
 // HandlerFunc defines functions that can handle bot commands / messages.
 type HandlerFunc func(update *Update)
 
-// Config defines the configurable parameters of a Bot.
+// Config defines Telegrams configurable parameters.
 type Config struct {
 	Token               string
 	UpdateMethod        string
-	PollingTimeout      int
 	PollingCronSchedule string
+	PollingTimeout      int
+	PollingUpdatesLimit int
 	AllowedUpdates      []string `json:"allowed_updates"`
 }
 
@@ -60,10 +63,10 @@ type Bot struct {
 	httpClient     httpClient
 	handlers       map[string]HandlerFunc
 	defaultHandler HandlerFunc
-	poller         *poller
+	poller         poller
 }
 
-// Init initializes a Bot instance.
+// NewBot initializes a Bot instance.
 //
 // If no UpdateMethod is specified in the config, it defaults to getUpdates.
 // See https://core.telegram.org/bots/api#getting-updates.
@@ -74,9 +77,9 @@ type Bot struct {
 //  - The given config is nil
 //  - The configured UpdateMethod is invalid.
 //  - The given serviceProvider is nil
-func Init(config *Config, httpClient httpClient) (*Bot, error) {
+func NewBot(config *Config, httpClient httpClient) (*Bot, error) {
 	if config == nil {
-		return nil, errMissingConfig
+		return nil, errNilConfig
 	}
 
 	if config.Token == "" {
@@ -92,7 +95,7 @@ func Init(config *Config, httpClient httpClient) (*Bot, error) {
 	}
 
 	if httpClient == nil {
-		return nil, errMissingHttpClient
+		return nil, errNilHttpClient
 	}
 
 	bot := &Bot{
@@ -101,19 +104,36 @@ func Init(config *Config, httpClient httpClient) (*Bot, error) {
 		handlers:   make(map[string]HandlerFunc),
 	}
 
-	if config.UpdateMethod == UpdateMethodGetUpdates {
-		bot.poller = newPoller(httpClient, config.PollingTimeout, config.AllowedUpdates, config.PollingCronSchedule)
-	}
-
 	return bot, nil
 }
 
-// Start starts the process of polling for updates from Bot.
+// WithPoller sets the poller used to continuously query for updates
+func (b *Bot) WithPoller(p poller) *Bot {
+	b.poller = p
+	return b
+}
+
+// Start starts the process of polling for updates from Telegram.
 func (b *Bot) Start() error {
 	if b.config.UpdateMethod == UpdateMethodGetUpdates {
+		if b.poller == nil {
+			return errNilPoller
+		}
+
+		updatesChan := b.poller.getUpdatesChanel()
+		go func() {
+			for update := range updatesChan {
+				update := &update
+				err := b.ProcessUpdate(update)
+				if err != nil {
+					log.Printf("failed to process update: %s", err.Error())
+				}
+			}
+		}()
+
 		err := b.poller.start()
 		if err != nil {
-			return errors.Wrap(err, "failed to start updates poller")
+			return errors.Wrap(err, "failed to start poller")
 		}
 	}
 
