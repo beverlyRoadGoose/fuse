@@ -21,7 +21,7 @@ you@pc:~$ go get -u heytobi.dev/fuse
 ## Current Features
 ✔️ Register Webhooks  
 ✔️ Receive updates through Webhooks  
-✔️ Receive updates through polling
+✔️ Receive updates through polling  
 ✔️ Send Messages  
 
 ## Usage
