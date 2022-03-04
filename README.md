@@ -53,14 +53,7 @@ return nil, errors.New("failed to initialize telegram instance")
 
 bot = bot.WithPoller(poller)
 
-bot.RegisterHandler("/start", func(u interface{}) {
-    update, ok := u.(telegram.Update)
-    if !ok {
-        log.Error("start handler received unexpected type, should be a telegram update")
-    }
-    
-    // Do stuff with the update, for example send a reply:
-    
+bot.RegisterHandler("/start", func(update *telegram.Update) {
     result, err := bot.Send(telegram.SendMessageRequest{
         ChatID: update.Message.Chat.ID,
         Text:   " ¯\_(ツ)_/¯",
@@ -103,14 +96,7 @@ if err != nil {
     log.Fatal("failed to register webhook")
 }
 
-bot.RegisterHandler("/start", func(u interface{}) {
-    update, ok := u.(telegram.Update)
-    if !ok {
-        log.Error("start handler received unexpected type, should be a telegram update")
-    }
-    
-    // Do stuff with the update, for example send a reply:
-    
+bot.RegisterHandler("/start", func(update *telegram.Update) {
     result, err := bot.Send(telegram.SendMessageRequest{
         ChatID: update.Message.Chat.ID,
         Text:   " ¯\_(ツ)_/¯",
