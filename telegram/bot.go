@@ -44,6 +44,11 @@ type poller interface {
 	getUpdatesChannel() <-chan Update
 }
 
+// Handler defines structs that can handle bot commands / messages.
+type Handler interface {
+	Handle(update *Update)
+}
+
 // HandlerFunc defines functions that can handle bot commands / messages.
 type HandlerFunc func(update *Update)
 
