@@ -26,13 +26,6 @@ func TestNewPoller_ReturnErrorIfTokenIsMissing(t *testing.T) {
 	assert.Equal(t, errMissingToken, err)
 }
 
-func TestNewPoller_UseDefaultScheduleIfNoneIsSpecified(t *testing.T) {
-	poller, err := NewPoller(&Config{Token: "test"}, &mockHttpClient{})
-
-	assert.NoError(t, err)
-	assert.Equal(t, defaultCronSchedule, poller.cronSchedule)
-}
-
 func TestGetUpdates_ReturnErrorIfRequestFails(t *testing.T) {
 	httpClient := &mockHttpClient{}
 	httpClient.On("Do", mock.Anything, mock.Anything).Return(nil, errors.New("fails"))

@@ -57,6 +57,7 @@ type Config struct {
 	Token               string
 	UpdateMethod        string
 	PollingCronSchedule string
+	PollingCronTimezone string
 	PollingTimeout      int
 	PollingUpdatesLimit int
 	AllowedUpdates      []string `json:"allowed_updates"`

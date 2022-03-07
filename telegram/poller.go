@@ -4,27 +4,27 @@ import (
 	"bytes"
 	"encoding/json"
 	"fmt"
-	"github.com/sirupsen/logrus"
+	"github.com/robfig/cron/v3"
 	"io/ioutil"
 	"net/http"
-	"time"
 
-	"github.com/go-co-op/gocron"
 	"github.com/pkg/errors"
+	"github.com/sirupsen/logrus"
 )
 
 const (
-	defaultCronSchedule = "*/1 * * * *"
+	defaultCronSchedule = "* * * * *" // every minute
+	defaultCronTimezone = "Europe/Berlin"
 )
 
 // A poller is responsible for continuously checking for updates from Telegram using the getUpdates method.
 // See https://core.telegram.org/bots/api#getupdates
 type Poller struct {
-	config       *Config
-	httpClient   httpClient
-	cronSchedule string
-	updatesChan  chan *Update
-	offset       int
+	config      *Config
+	httpClient  httpClient
+	updatesChan chan *Update
+	offset      int
+	ctr         int
 }
 
 func NewPoller(config *Config, httpClient httpClient) (*Poller, error) {
@@ -36,47 +36,33 @@ func NewPoller(config *Config, httpClient httpClient) (*Poller, error) {
 		return nil, errMissingToken
 	}
 
-	cronSchedule := config.PollingCronSchedule
-	if config.PollingCronSchedule == "" {
-		cronSchedule = defaultCronSchedule
-	}
-
 	return &Poller{
-		httpClient:   httpClient,
-		config:       config,
-		cronSchedule: cronSchedule,
-		updatesChan:  make(chan *Update, config.PollingUpdatesLimit),
+		httpClient:  httpClient,
+		config:      config,
+		updatesChan: make(chan *Update, config.PollingUpdatesLimit),
 	}, nil
 }
 
 func (p *Poller) start() error {
-	scheduler := gocron.NewScheduler(time.UTC)
-	_, err := scheduler.Cron(p.cronSchedule).Do(func() {
-		updates, err := p.getUpdates()
-		if err != nil {
-			logrus.WithError(err).Error("failed to get updates")
-		}
-
-		l := logrus.New()
-		l.SetFormatter(&logrus.JSONFormatter{})
-		l.Info(updates)
-
-		for _, update := range updates {
-			update := update
-			go func(u *Update) {
-				p.updatesChan <- update
-				l.Info(fmt.Sprintf("sent %d", update.ID))
-				if update.ID >= p.offset {
-					p.offset = update.ID + 1
-				}
-			}(update)
-		}
-	})
-	if err != nil {
-		return errors.Wrap(err, "failed to schedule update polling")
+	timezone := p.config.PollingCronTimezone
+	if timezone == "" {
+		timezone = defaultCronTimezone
 	}
 
-	scheduler.StartAsync()
+	schedule := p.config.PollingCronSchedule
+	if schedule == "" {
+		schedule = defaultCronSchedule
+	}
+
+	spec := fmt.Sprintf("CRON_TZ=%s %s", timezone, schedule)
+	scheduler := cron.New()
+
+	_, err := scheduler.AddJob(spec, p)
+	if err != nil {
+		return errors.Wrap(err, "failed to add poller job to cron scheduler")
+	}
+
+	scheduler.Start()
 
 	return nil
 }
@@ -100,10 +86,10 @@ func (p *Poller) getUpdates() ([]*Update, error) {
 		return nil, errors.Wrap(err, "failed to construct getUpdates request body")
 	}
 
+	p.ctr += 1
 	l := logrus.New()
 	l.SetFormatter(&logrus.JSONFormatter{})
-	l.Info("making request")
-	l.Info(string(bodyJson[:]))
+	l.WithField("ctr", p.ctr).Info("making request" + string(bodyJson[:]))
 
 	request, err := http.NewRequest(httpPost, url, bytes.NewBuffer(bodyJson))
 	if err != nil {
@@ -129,4 +115,23 @@ func (p *Poller) getUpdates() ([]*Update, error) {
 	}
 
 	return updates.Result, nil
+}
+
+// Run ...
+func (p *Poller) Run() {
+	updates, err := p.getUpdates()
+	if err != nil {
+		logrus.WithError(err).Error("failed to get updates")
+	}
+
+	for _, update := range updates {
+		update := update
+		go func(u *Update) {
+			p.updatesChan <- update
+			logrus.Info(fmt.Sprintf("sent %d", update.ID))
+			if update.ID >= p.offset {
+				p.offset = update.ID + 1
+			}
+		}(update)
+	}
 }
