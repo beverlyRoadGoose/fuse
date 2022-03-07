@@ -223,7 +223,9 @@ func (b *Bot) ProcessUpdate(update *Update) error {
 
 	if update.Message != nil {
 		if handler, hasHandler := b.handlers[update.Message.Text]; hasHandler {
-			handler(update)
+			if handler != nil {
+				handler(update)
+			}
 			return nil
 		}
 
