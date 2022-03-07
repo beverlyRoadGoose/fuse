@@ -23,7 +23,7 @@ type Poller struct {
 	config       *Config
 	httpClient   httpClient
 	cronSchedule string
-	updatesChan  chan Update
+	updatesChan  chan *Update
 	offset       int
 }
 
@@ -45,7 +45,7 @@ func NewPoller(config *Config, httpClient httpClient) (*Poller, error) {
 		httpClient:   httpClient,
 		config:       config,
 		cronSchedule: cronSchedule,
-		updatesChan:  make(chan Update),
+		updatesChan:  make(chan *Update, config.PollingUpdatesLimit),
 	}, nil
 }
 
@@ -57,11 +57,19 @@ func (p *Poller) start() error {
 			logrus.WithError(err).Error("failed to get updates")
 		}
 
+		l := logrus.New()
+		l.SetFormatter(&logrus.JSONFormatter{})
+		l.Info(updates)
+
 		for _, update := range updates {
-			p.updatesChan <- update
-			if update.ID >= p.offset {
-				p.offset = update.ID + 1
-			}
+			update := update
+			go func(u *Update) {
+				p.updatesChan <- update
+				l.Info(fmt.Sprintf("sent %d", update.ID))
+				if update.ID >= p.offset {
+					p.offset = update.ID + 1
+				}
+			}(update)
 		}
 	})
 	if err != nil {
@@ -73,27 +81,29 @@ func (p *Poller) start() error {
 	return nil
 }
 
-func (p *Poller) getUpdatesChannel() <-chan Update {
+func (p *Poller) getUpdatesChannel() <-chan *Update {
 	return p.updatesChan
 }
 
-func (p *Poller) getUpdates() ([]Update, error) {
+func (p *Poller) getUpdates() ([]*Update, error) {
 	url := fmt.Sprintf(telegramApiUrlFmt, p.config.Token, getUpdates)
 
 	requestBody := getUpdatesRequest{
+		Offset:         p.offset,
 		Limit:          p.config.PollingUpdatesLimit,
 		Timeout:        p.config.PollingTimeout,
 		AllowedUpdates: p.config.AllowedUpdates,
-	}
-
-	if p.offset > 0 {
-		requestBody.Offset = p.offset
 	}
 
 	bodyJson, err := json.Marshal(requestBody)
 	if err != nil {
 		return nil, errors.Wrap(err, "failed to construct getUpdates request body")
 	}
+
+	l := logrus.New()
+	l.SetFormatter(&logrus.JSONFormatter{})
+	l.Info("making request")
+	l.Info(string(bodyJson[:]))
 
 	request, err := http.NewRequest(httpPost, url, bytes.NewBuffer(bodyJson))
 	if err != nil {
@@ -103,7 +113,7 @@ func (p *Poller) getUpdates() ([]Update, error) {
 
 	response, err := p.httpClient.Do(request)
 	if err != nil {
-		return nil, errors.Wrap(err, "getUpdate call failed")
+		return nil, errors.Wrap(err, "getUpdates call failed")
 	}
 	defer response.Body.Close()
 

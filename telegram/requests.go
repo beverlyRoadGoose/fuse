@@ -1,11 +1,5 @@
 package telegram // import "heytobi.dev/fuse/telegram"
 
-type setWebhookResponse struct {
-	Ok          bool   `json:"ok"`
-	Result      bool   `json:"result"`
-	Description string `json:"description"`
-}
-
 // SendMessageRequest defines messages that can be sent by the bot.
 // https://core.telegram.org/bots/api#sendmessage
 type SendMessageRequest struct {
@@ -42,6 +36,16 @@ type Webhook struct {
 	DropPendingUpdates bool     `json:"drop_pending_updates"`
 }
 
+type deleteWebhookRequest struct {
+	DropPendingUpdates bool `json:"drop_pending_updates"`
+}
+
+type webhookResponse struct {
+	Ok          bool   `json:"ok"`
+	Result      bool   `json:"result"`
+	Description string `json:"description"`
+}
+
 // See https://core.telegram.org/bots/api#getupdates
 type getUpdatesRequest struct {
 	Offset         int      `json:"offset"`
@@ -51,6 +55,6 @@ type getUpdatesRequest struct {
 }
 
 type getUpdatesResponse struct {
-	Ok     bool     `json:"ok"`
-	Result []Update `json:"result"`
+	Ok     bool      `json:"ok"`
+	Result []*Update `json:"result"`
 }

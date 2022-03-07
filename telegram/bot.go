@@ -41,7 +41,7 @@ type httpClient interface {
 
 type poller interface {
 	start() error
-	getUpdatesChannel() <-chan Update
+	getUpdatesChannel() <-chan *Update
 }
 
 // Handler defines structs that can handle bot commands / messages.
@@ -127,7 +127,7 @@ func (b *Bot) Start() error {
 		updatesChan := b.poller.getUpdatesChannel()
 		go func() {
 			for update := range updatesChan {
-				update := &update
+				logrus.Info(fmt.Sprintf("received %d", update.ID))
 				err := b.ProcessUpdate(update)
 				if err != nil {
 					logrus.WithError(err).Error("failed to process update")
@@ -135,7 +135,12 @@ func (b *Bot) Start() error {
 			}
 		}()
 
-		err := b.poller.start()
+		_, err := b.deleteWebhook(false)
+		if err != nil {
+			return errors.Wrap(err, "failed to delete webhook")
+		}
+
+		err = b.poller.start()
 		if err != nil {
 			return errors.Wrap(err, "failed to start poller")
 		}
@@ -184,10 +189,48 @@ func (b *Bot) RegisterWebhook(webhook *Webhook) (bool, error) {
 		return false, errors.Wrap(err, "failed to parse register webhook response body")
 	}
 
-	var resp setWebhookResponse
+	var resp webhookResponse
 	err = json.Unmarshal(responseBody, &resp)
 	if err != nil {
 		return false, errors.Wrap(err, "failed to unmarshall setWebhook response")
+	}
+
+	return resp.Ok, nil
+}
+
+// deleteWebhook deletes the registered webhook.
+// See https://core.telegram.org/bots/api#deletewebhook
+func (b *Bot) deleteWebhook(dropPendingUpdates bool) (bool, error) {
+	url := fmt.Sprintf(telegramApiUrlFmt, b.config.Token, deleteWebhook)
+
+	body := deleteWebhookRequest{DropPendingUpdates: dropPendingUpdates}
+
+	bodyJson, err := json.Marshal(body)
+	if err != nil {
+		return false, errors.Wrap(err, "failed to marshal delete webhook request body")
+	}
+
+	request, err := http.NewRequest(httpPost, url, bytes.NewBuffer(bodyJson))
+	if err != nil {
+		return false, errors.Wrap(err, "failed to create register webhook request")
+	}
+	request.Header.Set("Content-Type", "application/json")
+
+	response, err := b.httpClient.Do(request)
+	if err != nil {
+		return false, errors.Wrap(err, "delete webhook http request failed")
+	}
+	defer response.Body.Close()
+
+	responseBody, err := ioutil.ReadAll(response.Body)
+	if err != nil {
+		return false, errors.Wrap(err, "failed to parse delete webhook response body")
+	}
+
+	var resp webhookResponse
+	err = json.Unmarshal(responseBody, &resp)
+	if err != nil {
+		return false, errors.Wrap(err, "failed to unmarshall delete Webhook response")
 	}
 
 	return resp.Ok, nil

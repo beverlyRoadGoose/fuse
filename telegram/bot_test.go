@@ -175,7 +175,7 @@ func TestRegisterWebhook_ReturnErrorIfApiRequestFails(t *testing.T) {
 }
 
 func TestRegisterWebhook_RegisterSuccessfully(t *testing.T) {
-	response := setWebhookResponse{Ok: true}
+	response := webhookResponse{Ok: true}
 	json, _ := json.Marshal(response)
 	body := ioutil.NopCloser(bytes.NewBuffer(json))
 
@@ -190,7 +190,7 @@ func TestRegisterWebhook_RegisterSuccessfully(t *testing.T) {
 }
 
 func TestRegisterWebhook_ReturnFalseIfResponseResultIsFalse(t *testing.T) {
-	response := setWebhookResponse{Ok: false}
+	response := webhookResponse{Ok: false}
 	responseJson, _ := json.Marshal(response)
 	body := ioutil.NopCloser(bytes.NewBuffer(responseJson))
 

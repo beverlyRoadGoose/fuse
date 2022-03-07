@@ -47,7 +47,7 @@ func TestGetUpdates_ReturnErrorIfRequestFails(t *testing.T) {
 func TestGetUpdates_GetUpdatesSuccessfully(t *testing.T) {
 	response := getUpdatesResponse{
 		Ok: false,
-		Result: []Update{
+		Result: []*Update{
 			{
 				ID: 1,
 			},
