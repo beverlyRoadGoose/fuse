@@ -59,7 +59,9 @@ func (p *Poller) start() error {
 
 		for _, update := range updates {
 			p.updatesChan <- update
-			p.offset = update.ID + 1
+			if update.ID > p.offset { // a message ID could be processed after a more recent one, without this check, the offset would be set to a value lower than it should be
+				p.offset = update.ID + 1
+			}
 		}
 	})
 	if err != nil {
