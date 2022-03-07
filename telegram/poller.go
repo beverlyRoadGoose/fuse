@@ -57,8 +57,6 @@ func (p *Poller) start() error {
 			logrus.WithError(err).Error("failed to get updates")
 		}
 
-		logrus.WithField("updates", updates).WithField("length", len(updates)).Info("offset")
-
 		for _, update := range updates {
 			p.updatesChan <- update
 			if update.ID >= p.offset {
