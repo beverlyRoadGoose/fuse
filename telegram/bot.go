@@ -70,6 +70,7 @@ type Bot struct {
 	handlers       map[string]HandlerFunc
 	defaultHandler HandlerFunc
 	poller         poller
+	isRunning      bool
 }
 
 // NewBot initializes a Bot instance.
@@ -120,7 +121,7 @@ func (b *Bot) WithPoller(p poller) *Bot {
 
 // Start starts the process of polling for updates from Telegram.
 func (b *Bot) Start() error {
-	if b.config.UpdateMethod == UpdateMethodGetUpdates {
+	if b.config.UpdateMethod == UpdateMethodGetUpdates && !b.isRunning {
 		if b.poller == nil {
 			return errNilPoller
 		}
@@ -145,6 +146,8 @@ func (b *Bot) Start() error {
 		if err != nil {
 			return errors.Wrap(err, "failed to start poller")
 		}
+
+		b.isRunning = true
 	}
 
 	return nil

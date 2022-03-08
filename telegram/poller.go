@@ -4,11 +4,11 @@ import (
 	"bytes"
 	"encoding/json"
 	"fmt"
-	"github.com/robfig/cron/v3"
 	"io/ioutil"
 	"net/http"
 
 	"github.com/pkg/errors"
+	"github.com/robfig/cron/v3"
 	"github.com/sirupsen/logrus"
 )
 
@@ -24,7 +24,6 @@ type Poller struct {
 	httpClient  httpClient
 	updatesChan chan *Update
 	offset      int
-	ctr         int
 }
 
 func NewPoller(config *Config, httpClient httpClient) (*Poller, error) {
@@ -39,7 +38,7 @@ func NewPoller(config *Config, httpClient httpClient) (*Poller, error) {
 	return &Poller{
 		httpClient:  httpClient,
 		config:      config,
-		updatesChan: make(chan *Update, config.PollingUpdatesLimit),
+		updatesChan: make(chan *Update),
 	}, nil
 }
 
@@ -85,11 +84,6 @@ func (p *Poller) getUpdates() ([]*Update, error) {
 	if err != nil {
 		return nil, errors.Wrap(err, "failed to construct getUpdates request body")
 	}
-
-	p.ctr += 1
-	l := logrus.New()
-	l.SetFormatter(&logrus.JSONFormatter{})
-	l.WithField("ctr", p.ctr).Info("making request" + string(bodyJson[:]))
 
 	request, err := http.NewRequest(httpPost, url, bytes.NewBuffer(bodyJson))
 	if err != nil {
