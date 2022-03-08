@@ -129,7 +129,6 @@ func (b *Bot) Start() error {
 		updatesChan := b.poller.getUpdatesChannel()
 		go func() {
 			for update := range updatesChan {
-				logrus.Info(fmt.Sprintf("received %d", update.ID))
 				err := b.ProcessUpdate(update)
 				if err != nil {
 					logrus.WithError(err).Error("failed to process update")

@@ -122,7 +122,6 @@ func (p *Poller) Run() {
 		update := update
 		go func(u *Update) {
 			p.updatesChan <- update
-			logrus.Info(fmt.Sprintf("sent %d", update.ID))
 			if update.ID >= p.offset {
 				p.offset = update.ID + 1
 			}
