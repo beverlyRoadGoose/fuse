@@ -6,6 +6,7 @@ import (
 	"fmt"
 	"io/ioutil"
 	"net/http"
+	"sort"
 
 	"github.com/pkg/errors"
 	"github.com/robfig/cron/v3"
@@ -107,6 +108,10 @@ func (p *Poller) getUpdates() ([]*Update, error) {
 	if err != nil {
 		return nil, errors.Wrap(err, fmt.Sprintf("failed to unmarshal getUpdates response: %s", string(responseBody[:])))
 	}
+
+	sort.Slice(updates.Result, func(i, j int) bool {
+		return updates.Result[i].ID < updates.Result[j].ID
+	})
 
 	return updates.Result, nil
 }
