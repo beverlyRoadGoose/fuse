@@ -4,12 +4,13 @@ import (
 	"bytes"
 	"encoding/json"
 	"fmt"
-	"github.com/pkg/errors"
-	"github.com/robfig/cron/v3"
-	"github.com/sirupsen/logrus"
 	"io/ioutil"
 	"net/http"
 	"sort"
+
+	"github.com/pkg/errors"
+	"github.com/robfig/cron/v3"
+	"github.com/sirupsen/logrus"
 )
 
 const (
@@ -121,7 +122,7 @@ func (p *Poller) Run() {
 	sort.Slice(updates, func(i, j int) bool {
 		return updates[i].ID < updates[j].ID
 	})
-	
+
 	for _, update := range updates {
 		update := update
 		go func(u *Update) {
