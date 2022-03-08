@@ -4,13 +4,12 @@ import (
 	"bytes"
 	"encoding/json"
 	"fmt"
-	"io/ioutil"
-	"net/http"
-	"sort"
-
 	"github.com/pkg/errors"
 	"github.com/robfig/cron/v3"
 	"github.com/sirupsen/logrus"
+	"io/ioutil"
+	"net/http"
+	"sort"
 )
 
 const (
@@ -109,10 +108,6 @@ func (p *Poller) getUpdates() ([]*Update, error) {
 		return nil, errors.Wrap(err, fmt.Sprintf("failed to unmarshal getUpdates response: %s", string(responseBody[:])))
 	}
 
-	sort.Slice(updates.Result, func(i, j int) bool {
-		return updates.Result[i].ID < updates.Result[j].ID
-	})
-
 	return updates.Result, nil
 }
 
@@ -123,6 +118,10 @@ func (p *Poller) Run() {
 		logrus.WithError(err).Error("failed to get updates")
 	}
 
+	sort.Slice(updates, func(i, j int) bool {
+		return updates[i].ID < updates[j].ID
+	})
+	
 	for _, update := range updates {
 		update := update
 		go func(u *Update) {
