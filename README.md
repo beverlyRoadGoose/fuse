@@ -115,6 +115,17 @@ bot.RegisterHandler("/start", func(update *telegram.Update) {
 bot.ProcessUpdate(Update{}) // the update parameter should be deserialized from the request body.
 ```
 
+### Using a Local Bot API Server
+If you are [running a Local Bot API Server](https://core.telegram.org/bots/api#using-a-local-bot-api-server), you can
+specify the host and the port (if applicable) using the fields exposed in the config struct:
+
+```go
+config := &telegram.Config{
+    BotApiServer: "https://localserver.net",
+    BotApiPort: 1234,
+}
+```
+
 ## License
 ```
 MIT License
