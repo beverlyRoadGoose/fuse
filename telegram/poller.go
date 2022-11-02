@@ -4,7 +4,7 @@ import (
 	"bytes"
 	"encoding/json"
 	"fmt"
-	"io/ioutil"
+	"io"
 	"net/http"
 	"sort"
 
@@ -25,6 +25,7 @@ type Poller struct {
 	httpClient  httpClient
 	updatesChan chan *Update
 	offset      int
+	apiUrlFmt   string
 }
 
 func NewPoller(config *Config, httpClient httpClient) (*Poller, error) {
@@ -40,6 +41,7 @@ func NewPoller(config *Config, httpClient httpClient) (*Poller, error) {
 		httpClient:  httpClient,
 		config:      config,
 		updatesChan: make(chan *Update),
+		apiUrlFmt:   deriveBotApiUrlBase(config) + "/bot%s/%s",
 	}, nil
 }
 
@@ -72,7 +74,7 @@ func (p *Poller) getUpdatesChannel() <-chan *Update {
 }
 
 func (p *Poller) getUpdates() ([]*Update, error) {
-	url := fmt.Sprintf(telegramApiUrlFmt, p.config.Token, getUpdates)
+	url := fmt.Sprintf(p.apiUrlFmt, p.config.Token, endpointGetUpdates)
 
 	requestBody := getUpdatesRequest{
 		Offset:         p.offset,
@@ -96,9 +98,14 @@ func (p *Poller) getUpdates() ([]*Update, error) {
 	if err != nil {
 		return nil, errors.Wrap(err, "getUpdates call failed")
 	}
-	defer response.Body.Close()
+	defer func(body io.ReadCloser) {
+		err := body.Close()
+		if err != nil {
+			logrus.WithError(err).Error("failed to close response body")
+		}
+	}(response.Body)
 
-	responseBody, err := ioutil.ReadAll(response.Body)
+	responseBody, err := io.ReadAll(response.Body)
 	if err != nil {
 		return nil, errors.Wrap(err, "failed to parse getUpdates response body")
 	}

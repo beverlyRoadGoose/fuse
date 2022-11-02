@@ -1,8 +1,8 @@
 package telegram // import "heytobi.dev/fuse/telegram"
 
 const (
-	getUpdates    = "getUpdates"    // https://core.telegram.org/bots/api#getupdates
-	setWebhook    = "setWebhook"    // https://core.telegram.org/bots/api#setwebhook
-	deleteWebhook = "deleteWebhook" // https://core.telegram.org/bots/api#deletewebhook
-	sendMessage   = "sendMessage"   // https://core.telegram.org/bots/api#sendmessage
+	endpointGetUpdates    = "getUpdates"    // https://core.telegram.org/bots/api#getupdates
+	endpointSetWebhook    = "setWebhook"    // https://core.telegram.org/bots/api#setwebhook
+	endpointDeleteWebhook = "deleteWebhook" // https://core.telegram.org/bots/api#deletewebhook
+	endpointSendMessage   = "sendMessage"   // https://core.telegram.org/bots/api#sendmessage
 )
