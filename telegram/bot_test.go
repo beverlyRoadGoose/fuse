@@ -3,8 +3,9 @@ package telegram // import "heytobi.dev/fuse/telegram"
 import (
 	"bytes"
 	"encoding/json"
-	"io/ioutil"
+	"io"
 	"net/http"
+	"strconv"
 	"testing"
 
 	"github.com/pkg/errors"
@@ -64,6 +65,35 @@ func TestNewBot_InitializeSuccessfully(t *testing.T) {
 	assert.NoError(t, err)
 }
 
+func TestNewBot_InitializeWithDefaultBotApiServer(t *testing.T) {
+	bot, err := NewBot(&Config{Token: "test"}, &mockHttpClient{})
+
+	assert.NotNil(t, bot)
+	assert.NoError(t, err)
+	assert.Equal(t, "https://api.telegram.org/bot%s/%s", bot.apiUrlFmt)
+}
+
+func TestNewBot_InitializeWithCustomBotApiServer(t *testing.T) {
+	customServer := "http://custom.server"
+	bot, err := NewBot(&Config{Token: "test", BotApiServer: customServer}, &mockHttpClient{})
+
+	assert.NotNil(t, bot)
+	assert.NoError(t, err)
+	assert.Equal(t, customServer+"/bot%s/%s", bot.apiUrlFmt)
+}
+
+func TestNewBot_InitializeWithCustomBotApiServerAndPort(t *testing.T) {
+	customServer := "http://custom.server"
+	customPort := 9090
+	bot, err := NewBot(&Config{Token: "test", BotApiServer: customServer, BotApiPort: customPort}, &mockHttpClient{})
+
+	assert.NotNil(t, bot)
+	assert.NoError(t, err)
+
+	expectedUrlFmt := customServer + ":" + strconv.Itoa(customPort) + "/bot%s/%s"
+	assert.Equal(t, expectedUrlFmt, bot.apiUrlFmt)
+}
+
 func TestStart_ReturnErrorIfUsingGetUpdatesAndPollerIsNil(t *testing.T) {
 	bot, _ := NewBot(&Config{Token: "test", UpdateMethod: UpdateMethodGetUpdates}, &mockHttpClient{})
 	err := bot.Start()
@@ -91,7 +121,7 @@ func TestSend_ReturnErrorIfMessageIsNil(t *testing.T) {
 func TestSend_SendSuccessfully(t *testing.T) {
 	response := sendMessageResponse{Ok: true}
 	responseJson, _ := json.Marshal(response)
-	body := ioutil.NopCloser(bytes.NewBuffer(responseJson))
+	body := io.NopCloser(bytes.NewBuffer(responseJson))
 
 	httpClient := &mockHttpClient{}
 	httpClient.On("Do", mock.Anything, mock.Anything).Return(&http.Response{Body: body}, nil)
@@ -177,7 +207,7 @@ func TestRegisterWebhook_ReturnErrorIfApiRequestFails(t *testing.T) {
 func TestRegisterWebhook_RegisterSuccessfully(t *testing.T) {
 	response := webhookResponse{Ok: true}
 	json, _ := json.Marshal(response)
-	body := ioutil.NopCloser(bytes.NewBuffer(json))
+	body := io.NopCloser(bytes.NewBuffer(json))
 
 	httpClient := &mockHttpClient{}
 	httpClient.On("Do", mock.Anything, mock.Anything).Return(&http.Response{Body: body}, nil)
@@ -192,7 +222,7 @@ func TestRegisterWebhook_RegisterSuccessfully(t *testing.T) {
 func TestRegisterWebhook_ReturnFalseIfResponseResultIsFalse(t *testing.T) {
 	response := webhookResponse{Ok: false}
 	responseJson, _ := json.Marshal(response)
-	body := ioutil.NopCloser(bytes.NewBuffer(responseJson))
+	body := io.NopCloser(bytes.NewBuffer(responseJson))
 
 	httpClient := &mockHttpClient{}
 	httpClient.On("Do", mock.Anything, mock.Anything).Return(&http.Response{Body: body}, nil)

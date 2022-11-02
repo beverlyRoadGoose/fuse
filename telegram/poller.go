@@ -25,6 +25,7 @@ type Poller struct {
 	httpClient  httpClient
 	updatesChan chan *Update
 	offset      int
+	apiUrlFmt   string
 }
 
 func NewPoller(config *Config, httpClient httpClient) (*Poller, error) {
@@ -40,6 +41,7 @@ func NewPoller(config *Config, httpClient httpClient) (*Poller, error) {
 		httpClient:  httpClient,
 		config:      config,
 		updatesChan: make(chan *Update),
+		apiUrlFmt:   deriveBotApiUrlBase(config) + "/bot%s/%s",
 	}, nil
 }
 
@@ -72,7 +74,7 @@ func (p *Poller) getUpdatesChannel() <-chan *Update {
 }
 
 func (p *Poller) getUpdates() ([]*Update, error) {
-	url := fmt.Sprintf(telegramApiUrlFmt, p.config.Token, getUpdates)
+	url := fmt.Sprintf(p.apiUrlFmt, p.config.Token, endpointGetUpdates)
 
 	requestBody := getUpdatesRequest{
 		Offset:         p.offset,

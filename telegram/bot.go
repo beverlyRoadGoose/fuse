@@ -4,18 +4,20 @@ import (
 	"bytes"
 	"encoding/json"
 	"fmt"
-	"github.com/sirupsen/logrus"
+	"io"
 	"io/ioutil"
 	"net/http"
+	"strconv"
 
 	"github.com/pkg/errors"
+	"github.com/sirupsen/logrus"
 )
 
 const (
 	UpdateMethodWebhook    = "webhook"
 	UpdateMethodGetUpdates = "getUpdates"
 
-	telegramApiUrlFmt = "https://api.telegram.org/bot%s/%s"
+	defaultBotApiServer = "https://api.telegram.org"
 
 	httpPost = "POST"
 )
@@ -54,6 +56,8 @@ type HandlerFunc func(update *Update)
 
 // Config defines Telegrams configurable parameters.
 type Config struct {
+	BotApiServer        string
+	BotApiPort          int
 	Token               string
 	UpdateMethod        string
 	PollingCronSchedule string
@@ -71,6 +75,7 @@ type Bot struct {
 	defaultHandler HandlerFunc
 	poller         poller
 	isRunning      bool
+	apiUrlFmt      string
 }
 
 // NewBot initializes a Bot instance.
@@ -81,8 +86,8 @@ type Bot struct {
 // an error is returned.
 //
 // It returns an error if any of these conditions are met:
-//  - The given config is nil
-//  - The configured UpdateMethod is invalid.
+//   - The given config is nil
+//   - The configured UpdateMethod is invalid.
 func NewBot(config *Config, httpClient httpClient) (*Bot, error) {
 	if config == nil {
 		return nil, errNilConfig
@@ -108,6 +113,7 @@ func NewBot(config *Config, httpClient httpClient) (*Bot, error) {
 		config:     config,
 		httpClient: httpClient,
 		handlers:   make(map[string]HandlerFunc),
+		apiUrlFmt:  deriveBotApiUrlBase(config) + "/bot%s/%s",
 	}
 
 	return bot, nil
@@ -164,7 +170,7 @@ func (b *Bot) RegisterWebhook(webhook *Webhook) (bool, error) {
 		return false, errMissingWebhookUrl
 	}
 
-	url := fmt.Sprintf(telegramApiUrlFmt, b.config.Token, setWebhook)
+	url := fmt.Sprintf(b.apiUrlFmt, b.config.Token, endpointSetWebhook)
 
 	if webhook.AllowedUpdates == nil {
 		webhook.AllowedUpdates = b.config.AllowedUpdates
@@ -204,7 +210,7 @@ func (b *Bot) RegisterWebhook(webhook *Webhook) (bool, error) {
 // deleteWebhook deletes the registered webhook.
 // See https://core.telegram.org/bots/api#deletewebhook
 func (b *Bot) deleteWebhook(dropPendingUpdates bool) (bool, error) {
-	url := fmt.Sprintf(telegramApiUrlFmt, b.config.Token, deleteWebhook)
+	url := fmt.Sprintf(b.apiUrlFmt, b.config.Token, endpointDeleteWebhook)
 
 	body := deleteWebhookRequest{DropPendingUpdates: dropPendingUpdates}
 
@@ -223,7 +229,12 @@ func (b *Bot) deleteWebhook(dropPendingUpdates bool) (bool, error) {
 	if err != nil {
 		return false, errors.Wrap(err, "delete webhook http request failed")
 	}
-	defer response.Body.Close()
+	defer func(body io.ReadCloser) {
+		err := body.Close()
+		if err != nil {
+			logrus.WithError(err).Error("failed to close response body")
+		}
+	}(response.Body)
 
 	responseBody, err := ioutil.ReadAll(response.Body)
 	if err != nil {
@@ -240,7 +251,7 @@ func (b *Bot) deleteWebhook(dropPendingUpdates bool) (bool, error) {
 }
 
 // RegisterDefaultHandler registers the given handler function as the default. The default handler handles all
-//updates that don't match a specific command that is assigned its own handler in RegisterHandler.
+// updates that don't match a specific command that is assigned its own handler in RegisterHandler.
 func (b *Bot) RegisterDefaultHandler(handler HandlerFunc) error {
 	if b.defaultHandler != nil {
 		return errDefaultHandlerExists
@@ -294,7 +305,7 @@ func (b *Bot) Send(message *SendMessageRequest) (bool, error) {
 		return false, errNilMessageRequest
 	}
 
-	url := fmt.Sprintf(telegramApiUrlFmt, b.config.Token, sendMessage)
+	url := fmt.Sprintf(b.apiUrlFmt, b.config.Token, endpointSendMessage)
 
 	bodyJson, err := json.Marshal(message)
 	if err != nil {
@@ -325,4 +336,16 @@ func (b *Bot) Send(message *SendMessageRequest) (bool, error) {
 	}
 
 	return resp.Ok, nil
+}
+
+func deriveBotApiUrlBase(config *Config) string {
+	botApiUrlBase := defaultBotApiServer
+	if config.BotApiServer != "" {
+		botApiUrlBase = config.BotApiServer
+		if config.BotApiPort != 0 {
+			botApiUrlBase += ":" + strconv.Itoa(config.BotApiPort)
+		}
+	}
+
+	return botApiUrlBase
 }
