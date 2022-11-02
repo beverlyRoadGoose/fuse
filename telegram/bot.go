@@ -5,7 +5,6 @@ import (
 	"encoding/json"
 	"fmt"
 	"io"
-	"io/ioutil"
 	"net/http"
 	"strconv"
 
@@ -193,7 +192,7 @@ func (b *Bot) RegisterWebhook(webhook *Webhook) (bool, error) {
 	}
 	defer response.Body.Close()
 
-	responseBody, err := ioutil.ReadAll(response.Body)
+	responseBody, err := io.ReadAll(response.Body)
 	if err != nil {
 		return false, errors.Wrap(err, "failed to parse register webhook response body")
 	}
@@ -236,7 +235,7 @@ func (b *Bot) deleteWebhook(dropPendingUpdates bool) (bool, error) {
 		}
 	}(response.Body)
 
-	responseBody, err := ioutil.ReadAll(response.Body)
+	responseBody, err := io.ReadAll(response.Body)
 	if err != nil {
 		return false, errors.Wrap(err, "failed to parse delete webhook response body")
 	}
@@ -324,7 +323,7 @@ func (b *Bot) Send(message *SendMessageRequest) (bool, error) {
 	}
 	defer response.Body.Close()
 
-	responseBody, err := ioutil.ReadAll(response.Body)
+	responseBody, err := io.ReadAll(response.Body)
 	if err != nil {
 		return false, errors.Wrap(err, "failed to parse send response body")
 	}

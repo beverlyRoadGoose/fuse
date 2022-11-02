@@ -3,11 +3,12 @@ import (
 	"bytes"
 	"encoding/json"
 	"errors"
-	"github.com/stretchr/testify/assert"
-	"github.com/stretchr/testify/mock"
-	"io/ioutil"
+	"io"
 	"net/http"
 	"testing"
+
+	"github.com/stretchr/testify/assert"
+	"github.com/stretchr/testify/mock"
 )
 
 func TestNewPoller_ReturnErrorIfConfigIsNil(t *testing.T) {
@@ -50,7 +51,7 @@ func TestGetUpdates_GetUpdatesSuccessfully(t *testing.T) {
 		},
 	}
 	responseJson, _ := json.Marshal(response)
-	body := ioutil.NopCloser(bytes.NewBuffer(responseJson))
+	body := io.NopCloser(bytes.NewBuffer(responseJson))
 
 	httpClient := &mockHttpClient{}
 	httpClient.On("Do", mock.Anything, mock.Anything).Return(&http.Response{Body: body}, nil)
