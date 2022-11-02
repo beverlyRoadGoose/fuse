@@ -23,6 +23,7 @@ you@pc:~$ go get -u heytobi.dev/fuse
 ✔️ Receive updates through Webhooks  
 ✔️ Receive updates through polling  
 ✔️ Send Messages  
+✔️ Supports Local Bot API Servers 
 
 ## Usage
 ### Getting Updates through long polling
