@@ -55,9 +55,9 @@ type HandlerFunc func(update *Update)
 
 // Config defines Telegrams configurable parameters.
 type Config struct {
-	BotApiServer     string
-	BotApiServerPort int
-	Token            string
+	BotApiServer        string
+	BotApiServerPort    int
+	Token               string
 	UpdateMethod        string
 	PollingCronSchedule string
 	PollingCronTimezone string
