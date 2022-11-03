@@ -31,6 +31,7 @@ var (
 	errNilHttpClient           = errors.New("an http client is required to initialize a Bot connection")
 	errNilPoller               = errors.New("a poller is required when using getUpdates")
 	errNilConfig               = errors.New("a configuration object is required to initialize a Bot connection")
+	errNilWebhookService       = errors.New("webhook service not initialised, is your bot configured to use the webhook update method?")
 	errHandlerExists           = errors.New("an handler already exists for this command")
 	errInvalidUpdateMethod     = errors.New("invalid update method")
 	errDefaultHandlerExists    = errors.New("a default handler is already registered")
@@ -111,12 +112,12 @@ func NewBot(config *Config, httpClient httpClient) (*Bot, error) {
 		return nil, errInvalidUpdateMethod
 	}
 
-	apiUrlFnt := deriveBotApiUrlBase(config) + "/bot%s/%s"
+	apiUrlFmt := deriveBotApiUrlBase(config) + "/bot%s/%s"
 
 	var err error
 	var webhookService webhookService
 	if config.UpdateMethod == UpdateMethodWebhook {
-		webhookService, err = webhook.NewService(httpClient, apiUrlFnt, config.Token, config.AllowedUpdates)
+		webhookService, err = webhook.NewService(httpClient, apiUrlFmt, config.Token, config.AllowedUpdates)
 		if err != nil {
 			return nil, errors.Wrap(err, "failed to initialize webhook service")
 		}
@@ -130,7 +131,7 @@ func NewBot(config *Config, httpClient httpClient) (*Bot, error) {
 		config:         config,
 		httpClient:     httpClient,
 		handlers:       make(map[string]HandlerFunc),
-		apiUrlFmt:      apiUrlFnt,
+		apiUrlFmt:      apiUrlFmt,
 		webhookService: webhookService,
 	}
 
@@ -183,7 +184,9 @@ func (b *Bot) RegisterWebhook(webhook *webhook.Webhook) (bool, error) {
 	}
 
 	if b.webhookService == nil {
-		// wtf
+		// ideally this block should never be hit, if it does, something is really wrong as the service should either
+		// be initialised successfully or we fail hard during the initialization of the bot.
+		return false, errNilWebhookService
 	}
 
 	return b.webhookService.RegisterWebhook(webhook)
