@@ -276,7 +276,7 @@ func (b *Bot) RegisterHandler(command string, handlerFunc HandlerFunc) error {
 	return nil
 }
 
-// ProcessUpdates processes updates from telegram.
+// ProcessUpdate processes updates from telegram.
 func (b *Bot) ProcessUpdate(update *Update) error {
 	if update == nil {
 		return errNilUpdate
