@@ -1,5 +1,9 @@
 package telegram // import "heytobi.dev/fuse/telegram"
 
+const (
+	endpointGetUpdates = "getUpdates" // https://core.telegram.org/bots/api#getupdates
+)
+
 // InlineQuery represents an incoming inline query.
 // See https://core.telegram.org/bots/api#inlinequery
 type InlineQuery struct {
@@ -70,4 +74,17 @@ type Update struct {
 	Poll               *Poll               `json:"poll"`
 	PollAnswer         *PollAnswer         `json:"poll_answer"`
 	// TODO add my_chat_member, chat_member, chat_join_request
+}
+
+// See https://core.telegram.org/bots/api#getupdates
+type getUpdatesRequest struct {
+	Offset         int      `json:"offset"`
+	Limit          int      `json:"limit"`
+	Timeout        int      `json:"timeout"`
+	AllowedUpdates []string `json:"allowed_updates"`
+}
+
+type getUpdatesResponse struct {
+	Ok     bool      `json:"ok"`
+	Result []*Update `json:"result"`
 }
