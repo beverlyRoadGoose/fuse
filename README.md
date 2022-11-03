@@ -92,7 +92,7 @@ if err != nil {
     log.Fatal("failed to initialize telegram bot")
 }
 
-bot.RegisterWebhook(telegram.Webhook{url: "mywebhook.com/notify"})
+bot.RegisterWebhook(webhook.Webhook{url: "mywebhook.com/notify"})
 if err != nil {
     log.Fatal("failed to register webhook")
 }
