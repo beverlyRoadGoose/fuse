@@ -111,7 +111,7 @@ func TestStart_StartSuccessfully(t *testing.T) {
 
 func TestSend_ReturnErrorIfMessageIsNil(t *testing.T) {
 	bot, _ := NewBot(&Config{Token: "test"}, &mockHttpClient{})
-	result, err := bot.Send(nil)
+	result, err := bot.SendMessage(nil)
 
 	assert.Error(t, err)
 	assert.Equal(t, errNilMessageRequest, err)
@@ -127,7 +127,7 @@ func TestSend_SendSuccessfully(t *testing.T) {
 	httpClient.On("Do", mock.Anything, mock.Anything).Return(&http.Response{Body: body}, nil)
 
 	bot, _ := NewBot(&Config{Token: "test"}, httpClient)
-	result, err := bot.Send(&SendMessageRequest{
+	result, err := bot.SendMessage(&SendMessageRequest{
 		ChatID: 0,
 		Text:   "test",
 	})

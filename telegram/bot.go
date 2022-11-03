@@ -298,8 +298,8 @@ func (b *Bot) ProcessUpdate(update *Update) error {
 	return nil
 }
 
-// Send sends a message to the user.
-func (b *Bot) Send(message *SendMessageRequest) (bool, error) {
+// SendMessage sends a message to the user.
+func (b *Bot) SendMessage(message *SendMessageRequest) (bool, error) {
 	if message == nil {
 		return false, errNilMessageRequest
 	}
