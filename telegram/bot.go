@@ -108,6 +108,9 @@ func NewBot(config *Config, httpClient httpClient) (*Bot, error) {
 	var webhookService *webhookService
 	if config.UpdateMethod == UpdateMethodWebhook {
 		webhookService, err = newWebhookService(httpClient, apiUrlFmt, config.Token, config.AllowedUpdates)
+		if err != nil {
+			return nil, errors.Wrap(err, "failed to initialize webhook service")
+		}
 	}
 
 	if httpClient == nil {
