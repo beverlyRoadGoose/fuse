@@ -68,13 +68,14 @@ type Config struct {
 
 // Bot defines the attributes of a Telegram Bot.
 type Bot struct {
-	config         *Config
-	httpClient     httpClient
-	handlers       map[string]HandlerFunc
-	defaultHandler HandlerFunc
-	poller         poller
-	isRunning      bool
-	apiUrlFmt      string
+	config           *Config
+	httpClient       httpClient
+	handlers         map[string]HandlerFunc
+	defaultHandler   HandlerFunc
+	poller           poller
+	isRunning        bool
+	apiUrlFmt        string
+	messagingService *messagingService
 }
 
 // NewBot initializes a Bot instance.
@@ -108,11 +109,19 @@ func NewBot(config *Config, httpClient httpClient) (*Bot, error) {
 		return nil, errNilHttpClient
 	}
 
+	apiUrlFmt := deriveBotApiUrlBase(config) + "/bot%s/%s"
+
+	messagingService, err := newMessagingService(httpClient, apiUrlFmt, config.Token)
+	if err != nil {
+		return nil, errors.Wrap(err, "failed to initialize messaging service")
+	}
+
 	bot := &Bot{
-		config:     config,
-		httpClient: httpClient,
-		handlers:   make(map[string]HandlerFunc),
-		apiUrlFmt:  deriveBotApiUrlBase(config) + "/bot%s/%s",
+		config:           config,
+		httpClient:       httpClient,
+		handlers:         make(map[string]HandlerFunc),
+		apiUrlFmt:        apiUrlFmt,
+		messagingService: messagingService,
 	}
 
 	return bot, nil
@@ -300,41 +309,7 @@ func (b *Bot) ProcessUpdate(update *Update) error {
 
 // SendMessage sends a message to the user.
 func (b *Bot) SendMessage(message *SendMessageRequest) (bool, error) {
-	if message == nil {
-		return false, errNilMessageRequest
-	}
-
-	url := fmt.Sprintf(b.apiUrlFmt, b.config.Token, endpointSendMessage)
-
-	bodyJson, err := json.Marshal(message)
-	if err != nil {
-		return false, errors.Wrap(err, "failed to marshal send request")
-	}
-
-	request, err := http.NewRequest(httpPost, url, bytes.NewBuffer(bodyJson))
-	if err != nil {
-		return false, errors.Wrap(err, "failed to create send request")
-	}
-	request.Header.Set("Content-Type", "application/json")
-
-	response, err := b.httpClient.Do(request)
-	if err != nil {
-		return false, errors.Wrap(err, "http request failed")
-	}
-	defer response.Body.Close()
-
-	responseBody, err := io.ReadAll(response.Body)
-	if err != nil {
-		return false, errors.Wrap(err, "failed to parse send response body")
-	}
-
-	var resp sendMessageResponse
-	err = json.Unmarshal(responseBody, &resp)
-	if err != nil {
-		return false, errors.Wrap(err, "failed to unmarshall sendMessage response")
-	}
-
-	return resp.Ok, nil
+	return b.messagingService.sendMessage(message)
 }
 
 func deriveBotApiUrlBase(config *Config) string {
