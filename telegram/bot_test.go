@@ -109,7 +109,7 @@ func TestStart_StartSuccessfully(t *testing.T) {
 	assert.NoError(t, err)
 }
 
-func TestSend_ReturnErrorIfMessageIsNil(t *testing.T) {
+func TestSendMessage_ReturnErrorIfMessageIsNil(t *testing.T) {
 	bot, _ := NewBot(&Config{Token: "test"}, &mockHttpClient{})
 	result, err := bot.SendMessage(nil)
 
@@ -118,7 +118,7 @@ func TestSend_ReturnErrorIfMessageIsNil(t *testing.T) {
 	assert.False(t, result)
 }
 
-func TestSend_SendSuccessfully(t *testing.T) {
+func TestSendMessage_SendSuccessfully(t *testing.T) {
 	response := sendMessageResponse{Ok: true}
 	responseJson, _ := json.Marshal(response)
 	body := io.NopCloser(bytes.NewBuffer(responseJson))
