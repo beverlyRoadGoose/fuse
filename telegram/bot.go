@@ -55,9 +55,9 @@ type HandlerFunc func(update *Update)
 
 // Config defines Telegrams configurable parameters.
 type Config struct {
-	BotApiServer        string
-	BotApiPort          int
-	Token               string
+	BotApiServer     string
+	BotApiServerPort int
+	Token            string
 	UpdateMethod        string
 	PollingCronSchedule string
 	PollingCronTimezone string
@@ -341,8 +341,8 @@ func deriveBotApiUrlBase(config *Config) string {
 	botApiUrlBase := defaultBotApiServer
 	if config.BotApiServer != "" {
 		botApiUrlBase = config.BotApiServer
-		if config.BotApiPort != 0 {
-			botApiUrlBase += ":" + strconv.Itoa(config.BotApiPort)
+		if config.BotApiServerPort != 0 {
+			botApiUrlBase += ":" + strconv.Itoa(config.BotApiServerPort)
 		}
 	}
 

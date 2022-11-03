@@ -85,7 +85,7 @@ func TestNewBot_InitializeWithCustomBotApiServer(t *testing.T) {
 func TestNewBot_InitializeWithCustomBotApiServerAndPort(t *testing.T) {
 	customServer := "http://custom.server"
 	customPort := 9090
-	bot, err := NewBot(&Config{Token: "test", BotApiServer: customServer, BotApiPort: customPort}, &mockHttpClient{})
+	bot, err := NewBot(&Config{Token: "test", BotApiServer: customServer, BotApiServerPort: customPort}, &mockHttpClient{})
 
 	assert.NotNil(t, bot)
 	assert.NoError(t, err)

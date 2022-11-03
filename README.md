@@ -123,7 +123,7 @@ specify the host and the port (if applicable) using the fields exposed in the co
 ```go
 config := &telegram.Config{
     BotApiServer: "https://localserver.net",
-    BotApiPort: 1234,
+    BotApiServerPort: 1234,
 }
 ```
 
