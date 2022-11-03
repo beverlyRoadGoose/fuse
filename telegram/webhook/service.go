@@ -37,7 +37,6 @@ func NewService(httpClient httpClient, apiUrlFmt, token string, AllowedUpdates [
 // Returns the result of the request, True on success.
 // See https://core.telegram.org/bots/api#setwebhook
 func (s *Service) RegisterWebhook(webhook *Webhook) (bool, error) {
-
 	if webhook.Url == "" {
 		return false, errMissingWebhookUrl
 	}
