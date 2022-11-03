@@ -8,6 +8,8 @@ import (
 	"net/http"
 	"strconv"
 
+	"heytobi.dev/fuse/telegram/webhook"
+
 	"github.com/pkg/errors"
 	"github.com/sirupsen/logrus"
 )
@@ -26,10 +28,10 @@ var (
 	errNilUpdate               = errors.New("update cannot be nil")
 	errNilMessageRequest       = errors.New("message cannot be nil")
 	errMissingToken            = errors.New("missing API token")
-	errMissingWebhookUrl       = errors.New("a url is required to register a webhook")
 	errNilHttpClient           = errors.New("an http client is required to initialize a Bot connection")
 	errNilPoller               = errors.New("a poller is required when using getUpdates")
 	errNilConfig               = errors.New("a configuration object is required to initialize a Bot connection")
+	errNilWebhookService       = errors.New("webhook service not initialised, is your bot configured to use the webhook update method?")
 	errHandlerExists           = errors.New("an handler already exists for this command")
 	errInvalidUpdateMethod     = errors.New("invalid update method")
 	errDefaultHandlerExists    = errors.New("a default handler is already registered")
@@ -43,6 +45,11 @@ type httpClient interface {
 type poller interface {
 	start() error
 	getUpdatesChannel() <-chan *Update
+}
+
+type webhookService interface {
+	RegisterWebhook(webhook *webhook.Webhook) (bool, error)
+	DeleteWebhook(dropPendingUpdates bool) (bool, error)
 }
 
 // Handler defines structs that can handle bot commands / messages.
@@ -75,6 +82,7 @@ type Bot struct {
 	poller         poller
 	isRunning      bool
 	apiUrlFmt      string
+	webhookService webhookService
 }
 
 // NewBot initializes a Bot instance.
@@ -104,15 +112,27 @@ func NewBot(config *Config, httpClient httpClient) (*Bot, error) {
 		return nil, errInvalidUpdateMethod
 	}
 
+	apiUrlFmt := deriveBotApiUrlBase(config) + "/bot%s/%s"
+
+	var err error
+	var webhookService webhookService
+	if config.UpdateMethod == UpdateMethodWebhook {
+		webhookService, err = webhook.NewService(httpClient, apiUrlFmt, config.Token, config.AllowedUpdates)
+		if err != nil {
+			return nil, errors.Wrap(err, "failed to initialize webhook service")
+		}
+	}
+
 	if httpClient == nil {
 		return nil, errNilHttpClient
 	}
 
 	bot := &Bot{
-		config:     config,
-		httpClient: httpClient,
-		handlers:   make(map[string]HandlerFunc),
-		apiUrlFmt:  deriveBotApiUrlBase(config) + "/bot%s/%s",
+		config:         config,
+		httpClient:     httpClient,
+		handlers:       make(map[string]HandlerFunc),
+		apiUrlFmt:      apiUrlFmt,
+		webhookService: webhookService,
 	}
 
 	return bot, nil
@@ -141,7 +161,7 @@ func (b *Bot) Start() error {
 			}
 		}()
 
-		_, err := b.deleteWebhook(false)
+		_, err := b.webhookService.DeleteWebhook(false)
 		if err != nil {
 			return errors.Wrap(err, "failed to delete webhook")
 		}
@@ -157,96 +177,19 @@ func (b *Bot) Start() error {
 	return nil
 }
 
-// RegisterWebhook registers the given webhook to listen for updates.
-// Returns the result of the request, True on success.
-// See https://core.telegram.org/bots/api#setwebhook
-func (b *Bot) RegisterWebhook(webhook *Webhook) (bool, error) {
+// RegisterWebhook ...
+func (b *Bot) RegisterWebhook(webhook *webhook.Webhook) (bool, error) {
 	if b.config.UpdateMethod == UpdateMethodGetUpdates {
 		return false, errWrongUpdateMethodConfig
 	}
 
-	if webhook.Url == "" {
-		return false, errMissingWebhookUrl
+	if b.webhookService == nil {
+		// ideally this block should never be hit, if it does, something is really wrong as the service should either
+		// be initialised successfully or we fail hard during the initialization of the bot.
+		return false, errNilWebhookService
 	}
 
-	url := fmt.Sprintf(b.apiUrlFmt, b.config.Token, endpointSetWebhook)
-
-	if webhook.AllowedUpdates == nil {
-		webhook.AllowedUpdates = b.config.AllowedUpdates
-	}
-
-	bodyJson, err := json.Marshal(webhook)
-	if err != nil {
-		return false, errors.Wrap(err, "failed to marshal register webhook request body")
-	}
-
-	request, err := http.NewRequest(httpPost, url, bytes.NewBuffer(bodyJson))
-	if err != nil {
-		return false, errors.Wrap(err, "failed to create register webhook request")
-	}
-	request.Header.Set("Content-Type", "application/json")
-
-	response, err := b.httpClient.Do(request)
-	if err != nil {
-		return false, errors.Wrap(err, "register webhook http request failed")
-	}
-	defer response.Body.Close()
-
-	responseBody, err := io.ReadAll(response.Body)
-	if err != nil {
-		return false, errors.Wrap(err, "failed to parse register webhook response body")
-	}
-
-	var resp webhookResponse
-	err = json.Unmarshal(responseBody, &resp)
-	if err != nil {
-		return false, errors.Wrap(err, "failed to unmarshall setWebhook response")
-	}
-
-	return resp.Ok, nil
-}
-
-// deleteWebhook deletes the registered webhook.
-// See https://core.telegram.org/bots/api#deletewebhook
-func (b *Bot) deleteWebhook(dropPendingUpdates bool) (bool, error) {
-	url := fmt.Sprintf(b.apiUrlFmt, b.config.Token, endpointDeleteWebhook)
-
-	body := deleteWebhookRequest{DropPendingUpdates: dropPendingUpdates}
-
-	bodyJson, err := json.Marshal(body)
-	if err != nil {
-		return false, errors.Wrap(err, "failed to marshal delete webhook request body")
-	}
-
-	request, err := http.NewRequest(httpPost, url, bytes.NewBuffer(bodyJson))
-	if err != nil {
-		return false, errors.Wrap(err, "failed to create register webhook request")
-	}
-	request.Header.Set("Content-Type", "application/json")
-
-	response, err := b.httpClient.Do(request)
-	if err != nil {
-		return false, errors.Wrap(err, "delete webhook http request failed")
-	}
-	defer func(body io.ReadCloser) {
-		err := body.Close()
-		if err != nil {
-			logrus.WithError(err).Error("failed to close response body")
-		}
-	}(response.Body)
-
-	responseBody, err := io.ReadAll(response.Body)
-	if err != nil {
-		return false, errors.Wrap(err, "failed to parse delete webhook response body")
-	}
-
-	var resp webhookResponse
-	err = json.Unmarshal(responseBody, &resp)
-	if err != nil {
-		return false, errors.Wrap(err, "failed to unmarshall delete Webhook response")
-	}
-
-	return resp.Ok, nil
+	return b.webhookService.RegisterWebhook(webhook)
 }
 
 // RegisterDefaultHandler registers the given handler function as the default. The default handler handles all

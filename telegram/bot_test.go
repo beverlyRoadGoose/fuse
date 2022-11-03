@@ -3,12 +3,12 @@ package telegram // import "heytobi.dev/fuse/telegram"
 import (
 	"bytes"
 	"encoding/json"
+	"heytobi.dev/fuse/telegram/webhook"
 	"io"
 	"net/http"
 	"strconv"
 	"testing"
 
-	"github.com/pkg/errors"
 	"github.com/stretchr/testify/assert"
 	"github.com/stretchr/testify/mock"
 )
@@ -172,68 +172,6 @@ func TestRegisterDefaultHandler_ReturnErrorIfHandlerExists(t *testing.T) {
 	assert.Equal(t, errDefaultHandlerExists, err)
 }
 
-func TestRegisterWebhook_ReturnErrorIfUrlIsEmpty(t *testing.T) {
-	httpClient := &mockHttpClient{}
-	httpClient.On("Do", mock.Anything, mock.Anything).Return(&http.Response{}, errors.New("failed"))
-
-	bot, _ := NewBot(&Config{Token: "test", UpdateMethod: UpdateMethodWebhook}, httpClient)
-	registered, err := bot.RegisterWebhook(&Webhook{Url: ""})
-
-	assert.Error(t, err)
-	assert.Equal(t, errMissingWebhookUrl, err)
-	assert.False(t, registered)
-}
-
-func TestRegisterWebhook_ReturnErrorIfUpdateMethodIsNotWebhook(t *testing.T) {
-	bot, _ := NewBot(&Config{Token: "test"}, &mockHttpClient{})
-	registered, err := bot.RegisterWebhook(&Webhook{Url: "url.test"})
-
-	assert.Error(t, err)
-	assert.Equal(t, errWrongUpdateMethodConfig, err)
-	assert.False(t, registered)
-}
-
-func TestRegisterWebhook_ReturnErrorIfApiRequestFails(t *testing.T) {
-	httpClient := &mockHttpClient{}
-	httpClient.On("Do", mock.Anything, mock.Anything).Return(&http.Response{}, errors.New("failed"))
-
-	bot, _ := NewBot(&Config{Token: "test", UpdateMethod: UpdateMethodWebhook}, httpClient)
-	result, err := bot.RegisterWebhook(&Webhook{Url: "webhook.url"})
-
-	assert.Error(t, err)
-	assert.False(t, result)
-}
-
-func TestRegisterWebhook_RegisterSuccessfully(t *testing.T) {
-	response := webhookResponse{Ok: true}
-	json, _ := json.Marshal(response)
-	body := io.NopCloser(bytes.NewBuffer(json))
-
-	httpClient := &mockHttpClient{}
-	httpClient.On("Do", mock.Anything, mock.Anything).Return(&http.Response{Body: body}, nil)
-
-	bot, _ := NewBot(&Config{Token: "test", UpdateMethod: UpdateMethodWebhook}, httpClient)
-	result, err := bot.RegisterWebhook(&Webhook{Url: "webhook.url"})
-
-	assert.True(t, result)
-	assert.NoError(t, err)
-}
-
-func TestRegisterWebhook_ReturnFalseIfResponseResultIsFalse(t *testing.T) {
-	response := webhookResponse{Ok: false}
-	responseJson, _ := json.Marshal(response)
-	body := io.NopCloser(bytes.NewBuffer(responseJson))
-
-	httpClient := &mockHttpClient{}
-	httpClient.On("Do", mock.Anything, mock.Anything).Return(&http.Response{Body: body}, nil)
-
-	bot, _ := NewBot(&Config{Token: "test", UpdateMethod: UpdateMethodWebhook}, httpClient)
-	result, err := bot.RegisterWebhook(&Webhook{Url: "webhook.url"})
-
-	assert.False(t, result)
-	assert.NoError(t, err)
-}
-
 func TestProcessUpdate_ReturnErrorIfUpdateIsNil(t *testing.T) {
 	bot, _ := NewBot(&Config{Token: "test"}, &mockHttpClient{})
 	err := bot.ProcessUpdate(nil)
@@ -249,4 +187,13 @@ func TestProcessUpdate_DontReturnErrorIfGivenValidUpdateType(t *testing.T) {
 	})
 
 	assert.NoError(t, err)
+}
+
+func TestRegisterWebhook_ReturnErrorIfUpdateMethodIsNotWebhook(t *testing.T) {
+	bot, _ := NewBot(&Config{Token: "test"}, &mockHttpClient{})
+	registered, err := bot.RegisterWebhook(&webhook.Webhook{Url: "url.test"})
+
+	assert.Error(t, err)
+	assert.Equal(t, errWrongUpdateMethodConfig, err)
+	assert.False(t, registered)
 }
