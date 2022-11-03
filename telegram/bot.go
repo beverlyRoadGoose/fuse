@@ -28,7 +28,6 @@ var (
 	errNilUpdate               = errors.New("update cannot be nil")
 	errNilMessageRequest       = errors.New("message cannot be nil")
 	errMissingToken            = errors.New("missing API token")
-	errMissingWebhookUrl       = errors.New("a url is required to register a webhook")
 	errNilHttpClient           = errors.New("an http client is required to initialize a Bot connection")
 	errNilPoller               = errors.New("a poller is required when using getUpdates")
 	errNilConfig               = errors.New("a configuration object is required to initialize a Bot connection")
