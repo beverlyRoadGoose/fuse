@@ -1,0 +1,4 @@
+linters-settings:
+  govet:
+    enable:
+#      - fieldalignment # commented out until it's possible to auto apply suggestions
