@@ -71,3 +71,16 @@ type Update struct {
 	PollAnswer         *PollAnswer         `json:"poll_answer"`
 	// TODO add my_chat_member, chat_member, chat_join_request
 }
+
+// See https://core.telegram.org/bots/api#getupdates
+type getUpdatesRequest struct {
+	Offset         int      `json:"offset"`
+	Limit          int      `json:"limit"`
+	Timeout        int      `json:"timeout"`
+	AllowedUpdates []string `json:"allowed_updates"`
+}
+
+type getUpdatesResponse struct {
+	Ok     bool      `json:"ok"`
+	Result []*Update `json:"result"`
+}
