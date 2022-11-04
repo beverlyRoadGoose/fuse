@@ -85,7 +85,8 @@ type SendMessageRequest struct {
 	ProtectContent           bool            `json:"protect_content"`
 	ReplyToMessageID         int             `json:"reply_to_message_id"`
 	AllowSendingWithoutReply bool            `json:"allow_sending_without_reply"`
-	// TODO add missing optional reply_markup
+	// ReplyMarkup supports different value types, the supported types are listed in the telegram api docs
+	ReplyMarkup any `json:"reply_markup"`
 }
 
 type sendMessageResponse struct {
