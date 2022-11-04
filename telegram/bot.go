@@ -102,19 +102,15 @@ func NewBot(config *Config, httpClient httpClient) (*Bot, error) {
 		return nil, errInvalidUpdateMethod
 	}
 
-	apiUrlFmt := deriveBotApiUrlBase(config) + "/bot%s/%s"
-
-	var err error
-	var webhookService *webhookService
-	if config.UpdateMethod == UpdateMethodWebhook {
-		webhookService, err = newWebhookService(httpClient, apiUrlFmt, config.Token, config.AllowedUpdates)
-		if err != nil {
-			return nil, errors.Wrap(err, "failed to initialize webhook service")
-		}
-	}
-
 	if httpClient == nil {
 		return nil, errNilHttpClient
+	}
+
+	apiUrlFmt := deriveBotApiUrlBase(config) + "/bot%s/%s"
+
+	webhookService, err := newWebhookService(httpClient, apiUrlFmt, config.Token, config.AllowedUpdates)
+	if err != nil {
+		return nil, errors.Wrap(err, "failed to initialize webhook service")
 	}
 
 	messagingService, err := newMessagingService(httpClient, apiUrlFmt, config.Token)
