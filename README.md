@@ -73,6 +73,49 @@ bot.Start() // start listening for updates.
 
 ```
 
+### Getting Updates through a Webhook
+#### Steps
+1. Initialize a Bot
+2. Register a Webhook
+3. Register command handlers
+4. Call the process update method directly whenever your webhook is invoked
+
+```go
+httpClient := &http.Client{}
+config := &telegram.Config{
+    Token:        "<YOUR TELEGRAM TOKEN>",
+    UpdateMethod: telegram.UpdateMethodWebhook,
+}
+
+bot, err := telegram.Init(config, httpClient)
+if err != nil {
+    log.Fatal("failed to initialize telegram bot")
+}
+
+bot.RegisterWebhook(telegram.Webhook{url: "mywebhook.com/notify"})
+if err != nil {
+    log.Fatal("failed to register webhook")
+}
+
+bot.RegisterHandler("/start", func(update *telegram.Update) {
+    result, err := bot.Send(telegram.SendMessageRequest{
+        ChatID: update.Message.Chat.ID,
+        Text:   " ¯\_(ツ)_/¯",
+    })
+
+    if err != nil {
+        log.Error("failed to send telegram message")
+    }
+
+    if !result {
+        log.Warn("send message result was false")
+    }
+})
+
+// In your webhook http handler:
+bot.ProcessUpdate(Update{}) // the update parameter should be deserialized from the request body.
+```
+
 ### Using a Local Bot API Server
 If you are [running a Local Bot API Server](https://core.telegram.org/bots/api#using-a-local-bot-api-server), you can
 specify the host and the port (if applicable) using the fields exposed in the config struct:
