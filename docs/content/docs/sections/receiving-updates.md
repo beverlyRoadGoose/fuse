@@ -56,7 +56,7 @@ bot.Start() // start listening for updates.
 to test your bot.
 {{< /hint >}}
 
-{{< hint warning >}}
+{{< hint danger >}}
 ⚠️ This method will not work if an outgoing webhook is set up.
 {{< /hint >}}
 
