@@ -5,7 +5,7 @@ type: docs
 
 [![License: MIT](https://img.shields.io/badge/License-MIT-yellow.svg)](https://opensource.org/licenses/MIT)
 [![GoDoc](https://godoc.org/heytobi.dev/fuse?status.svg)](https://godoc.org//heytobi.dev/fuse)
-[![GitHub Actions](https://github.com/beverlyRoadGoose/fuse/actions/workflows/ci.yml/badge.svg)](https://github.com/beverlyRoadGoose/fuse/actions/workflows/ci.yml)
+[![GitHub Actions](https://github.com/beverlyRoadGoose/fuse/actions/workflows/ci.yaml/badge.svg)](https://github.com/beverlyRoadGoose/fuse/actions/workflows/ci.yml)
 [![codecov.io](https://codecov.io/gh/beverlyRoadGoose/fuse/coverage.svg?branch=main)](https://codecov.io/gh/beverlyRoadGoose/fuse)
 
 ## Introduction
