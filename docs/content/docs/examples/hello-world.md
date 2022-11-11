@@ -34,7 +34,7 @@ bot.RegisterHandler("/start", func(update *telegram.Update) {
     }
 
     if !result.Successful {
-        log.Warn(fmt.Sprintf("failed to send telegram message: %s"), result.Description)
+        log.Warn(fmt.Sprintf("failed to send telegram message: %s", result.Description))
     }
 })
 ```
