@@ -115,7 +115,7 @@ func TestSendMessage_ReturnErrorIfMessageIsNil(t *testing.T) {
 
 	assert.Error(t, err)
 	assert.Equal(t, errNilMessageRequest, err)
-	assert.False(t, result)
+	assert.False(t, result.Successful)
 }
 
 func TestSendMessage_SendSuccessfully(t *testing.T) {
@@ -132,7 +132,7 @@ func TestSendMessage_SendSuccessfully(t *testing.T) {
 		Text:   "test",
 	})
 
-	assert.True(t, result)
+	assert.True(t, result.Successful)
 	assert.NoError(t, err)
 }
 

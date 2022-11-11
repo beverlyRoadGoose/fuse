@@ -41,6 +41,11 @@ type poller interface {
 	getUpdatesChannel() <-chan *Update
 }
 
+type ActionResult struct {
+	Successful  bool
+	Description string
+}
+
 // Handler defines structs that can handle bot commands / messages.
 type Handler interface {
 	Handle(update *Update)
@@ -229,7 +234,7 @@ func (b *Bot) ProcessUpdate(update *Update) error {
 }
 
 // SendMessage sends a message to the user.
-func (b *Bot) SendMessage(message *SendMessageRequest) (bool, error) {
+func (b *Bot) SendMessage(message *SendMessageRequest) (ActionResult, error) {
 	return b.messagingService.sendMessage(message)
 }
 

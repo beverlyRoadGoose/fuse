@@ -64,8 +64,8 @@ bot.RegisterHandler("/start", func(update *telegram.Update) {
         log.Error("failed to send telegram message")
     }
 
-    if !result {
-        log.Warn("send message result was false")
+    if !result.Successful {
+        log.Warn(fmt.Sprintf("failed to send telegram message: %s"), result.Description)
     }
 })
 
@@ -107,8 +107,8 @@ bot.RegisterHandler("/start", func(update *telegram.Update) {
         log.Error("failed to send telegram message")
     }
 
-    if !result {
-        log.Warn("send message result was false")
+    if !result.Successful {
+        log.Warn(fmt.Sprintf("failed to send telegram message: %s"), result.Description)
     }
 })
 

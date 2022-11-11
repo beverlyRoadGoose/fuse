@@ -52,9 +52,14 @@ bot.Start() // start listening for updates.
 ```
 
 {{< hint info >}}
-💡This method is very handy during development as you don't have to set up a webhook that Telegram servers can reach 
+💡This method is very handy during development as you don't have to set up a webhook that Telegram servers can reach
 to test your bot.
 {{< /hint >}}
+
+{{< hint warning >}}
+⚠️ This method will not work if an outgoing webhook is set up.
+{{< /hint >}}
+
 
 ## Getting Updates through a Webhook 
 **Steps**
@@ -66,7 +71,7 @@ to test your bot.
 ```go
 httpClient := &http.Client{}
 config := &telegram.Config{
-    Token: "<YOUR TELEGRAM TOKEN>",
+    Token:        "<YOUR TELEGRAM TOKEN>",
     UpdateMethod: telegram.UpdateMethodWebhook,
 }
 

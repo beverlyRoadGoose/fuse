@@ -89,8 +89,9 @@ type SendMessageRequest struct {
 }
 
 type sendMessageResponse struct {
-	Ok     bool `json:"ok"`
-	Result struct {
+	Ok          bool   `json:"ok"`
+	Description string `json:"description"`
+	Result      struct {
 		MessageID int    `json:"message_id"`
 		From      *User  `json:"from"`
 		Chat      *Chat  `json:"chat"`

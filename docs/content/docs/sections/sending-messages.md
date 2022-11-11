@@ -1,10 +1,8 @@
----
-title: "Hello World!"
----
+# Sending Messages
 
-# Hello World!
+## Replying a Message
 
-In this example, we reply a user with the text `Hello World!` when they send the `/start` command to our bot.
+In this snippet, we reply a user with the text `¯\_(ツ)_/¯` when they send the `/start` command to our bot.
 
 ```go
 httpClient := &http.Client{}
@@ -26,7 +24,7 @@ if err != nil {
 bot.RegisterHandler("/start", func(update *telegram.Update) {
     result, err := bot.Send(telegram.SendMessageRequest{
         ChatID: update.Message.Chat.ID,
-        Text:   "Hello World!",
+        Text:   " ¯\_(ツ)_/¯",
     })
 
     if err != nil {
@@ -38,3 +36,6 @@ bot.RegisterHandler("/start", func(update *telegram.Update) {
     }
 })
 ```
+
+The `messageSent` flag is set based on the `ok` field in the response for the telegram API call. You can read more about
+the `ok` field [in the Telegram docs](https://core.telegram.org/bots/api#making-requests).
