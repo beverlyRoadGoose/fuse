@@ -1,5 +1,5 @@
 <h2>
-    <img src="./assets/img/fuse.png">
+    <img src="assets/images/fuse.png">
 <div>
 
 [![License: MIT](https://img.shields.io/badge/License-MIT-yellow.svg)](https://opensource.org/licenses/MIT)
@@ -35,7 +35,7 @@ you@pc:~$ go get -u heytobi.dev/fuse
 ```go
 httpClient := &http.Client{}
 config := &telegram.Config{
-    Token:               "<YOUR TOKEN>",
+    Token:               "<YOUR TELEGRAM TOKEN>",
     UpdateMethod:        telegram.UpdateMethodGetUpdates,
     PollingCronSchedule: "*/1 * * * *",
     PollingTimeout:      30,
@@ -83,7 +83,7 @@ bot.Start() // start listening for updates.
 ```go
 httpClient := &http.Client{}
 config := &telegram.Config{
-    Token: "<YOUR TOKEN>",
+    Token:        "<YOUR TELEGRAM TOKEN>",
     UpdateMethod: telegram.UpdateMethodWebhook,
 }
 
@@ -126,6 +126,9 @@ config := &telegram.Config{
     BotApiServerPort: 1234,
 }
 ```
+
+### Documentation
+The full documentation with examples is available at [fuse.heytobi.dev](https://fuse.heytobi.dev/)
 
 ## License
 ```
