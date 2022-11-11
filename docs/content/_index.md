@@ -1,91 +1,26 @@
-<h2>
-    <img src="assets/images/fuse.png">
-<div>
+---
+title: Introduction
+type: docs
+---
 
 [![License: MIT](https://img.shields.io/badge/License-MIT-yellow.svg)](https://opensource.org/licenses/MIT)
 [![GoDoc](https://godoc.org/heytobi.dev/fuse?status.svg)](https://godoc.org//heytobi.dev/fuse)
 [![GitHub Actions](https://github.com/beverlyRoadGoose/fuse/actions/workflows/ci.yml/badge.svg)](https://github.com/beverlyRoadGoose/fuse/actions/workflows/ci.yml)
 [![codecov.io](https://codecov.io/gh/beverlyRoadGoose/fuse/coverage.svg?branch=main)](https://codecov.io/gh/beverlyRoadGoose/fuse)
-</div>
-</h2>
 
+## Introduction
 Fuse is a Go library for developing [Telegram](https://telegram.org/) bots, using the [Telegram Bot API](https://core.telegram.org/bots/api).
 
+{{< hint warning >}}
 ⚠️ I'm developing this for use in a hobby project, so in the initial phase I'm only adding features as needed in the main project. Overtime I'll aim to cover much of what the Telegram API provides.
-
-## Installation
-```console
-you@pc:~$ go get -u heytobi.dev/fuse
-```
+{{< /hint >}}
 
 ## Current Features
 ✔️ Register Webhooks  
 ✔️ Receive updates through Webhooks  
 ✔️ Receive updates through polling  
 ✔️ Send Messages  
-✔️ Supports Local Bot API Servers 
-
-## Usage
-### Getting Updates through long polling
-#### Steps
-1. Initialize a Bot
-2. Register command handlers
-3. Start polling for updates
-
-```go
-httpClient := &http.Client{}
-config := &telegram.Config{
-    Token:               "<YOUR TELEGRAM TOKEN>",
-    UpdateMethod:        telegram.UpdateMethodGetUpdates,
-    PollingCronSchedule: "*/1 * * * *",
-    PollingTimeout:      30,
-    PollingUpdatesLimit: 100,
-}
-
-poller, err := telegram.NewPoller(telegramConfig, httpClient)
-if err != nil {
-return nil, errors.New("failed to initialize telegram poller")
-}
-
-bot, err := telegram.NewBot(telegramConfig, httpClient)
-if err != nil {
-return nil, errors.New("failed to initialize telegram instance")
-}
-
-bot = bot.WithPoller(poller)
-
-bot.RegisterHandler("/start", func(update *telegram.Update) {
-    result, err := bot.Send(telegram.SendMessageRequest{
-        ChatID: update.Message.Chat.ID,
-        Text:   " ¯\_(ツ)_/¯",
-    })
-
-    if err != nil {
-        log.Error("failed to send telegram message")
-    }
-
-    if !result {
-        log.Warn("send message result was false")
-    }
-})
-
-bot.Start() // start listening for updates.
-
-```
-
-### Using a Local Bot API Server
-If you are [running a Local Bot API Server](https://core.telegram.org/bots/api#using-a-local-bot-api-server), you can
-specify the host and the port (if applicable) using the fields exposed in the config struct:
-
-```go
-config := &telegram.Config{
-    BotApiServer: "https://localserver.net",
-    BotApiServerPort: 1234,
-}
-```
-
-### Documentation
-The full documentation with examples is available at [fuse.heytobi.dev](https://fuse.heytobi.dev/)
+✔️ Supports Local Bot API Servers
 
 ## License
 ```
@@ -111,3 +46,4 @@ LIABILITY, WHETHER IN AN ACTION OF CONTRACT, TORT OR OTHERWISE, ARISING FROM,
 OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE
 SOFTWARE.
 ```
+
