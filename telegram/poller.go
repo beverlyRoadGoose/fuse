@@ -8,17 +8,13 @@ import (
 	"net/http"
 	"sort"
 
+	"heytobi.dev/fuse/job"
+
 	"github.com/pkg/errors"
-	"github.com/robfig/cron/v3"
 	"github.com/sirupsen/logrus"
 )
 
-const (
-	defaultCronSchedule = "* * * * *" // every minute
-	defaultCronTimezone = "Europe/Berlin"
-)
-
-// A poller is responsible for continuously checking for updates from Telegram using the getUpdates method.
+// Poller is responsible for continuously checking for updates from Telegram using the getUpdates method.
 // See https://core.telegram.org/bots/api#getupdates
 type Poller struct {
 	config      *Config
@@ -46,25 +42,12 @@ func NewPoller(config *Config, httpClient httpClient) (*Poller, error) {
 }
 
 func (p *Poller) start() error {
-	timezone := p.config.PollingCronTimezone
-	if timezone == "" {
-		timezone = defaultCronTimezone
-	}
-
-	schedule := p.config.PollingCronSchedule
-	if schedule == "" {
-		schedule = defaultCronSchedule
-	}
-
-	spec := fmt.Sprintf("CRON_TZ=%s %s", timezone, schedule)
-	scheduler := cron.New()
-
-	_, err := scheduler.AddJob(spec, p)
+	scheduledJob, err := job.NewScheduledJob(p, p.config.PollingIntervalMS)
 	if err != nil {
-		return errors.Wrap(err, "failed to add poller job to cron scheduler")
+		return errors.Wrap(err, "failed to initialize scheduled job for poller")
 	}
 
-	scheduler.Start()
+	scheduledJob.Start()
 
 	return nil
 }
