@@ -60,8 +60,7 @@ type Config struct {
 	BotApiServerPort    int
 	Token               string
 	UpdateMethod        string
-	PollingCronSchedule string
-	PollingCronTimezone string
+	PollingIntervalMS   int64
 	PollingTimeout      int
 	PollingUpdatesLimit int
 	AllowedUpdates      []string `json:"allowed_updates"`

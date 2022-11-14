@@ -16,7 +16,7 @@ httpClient := &http.Client{}
 config := &telegram.Config{
     Token:               "<YOUR TOKEN>",
     UpdateMethod:        telegram.UpdateMethodGetUpdates,
-    PollingCronSchedule: "*/1 * * * *",
+    PollingIntervalMS:   1000,
     PollingTimeout:      30,
     PollingUpdatesLimit: 100,
 }
