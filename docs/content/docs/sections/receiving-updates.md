@@ -52,6 +52,10 @@ bot.Start() // start listening for updates.
 ```
 
 {{< hint info >}}
+💡You can customise how frequently your bot polls for updates using the `PollingCronSchedule` config attribute.
+{{< /hint >}}
+
+{{< hint info >}}
 💡This method is very handy during development as you don't have to set up a webhook that Telegram servers can reach
 to test your bot.
 {{< /hint >}}
