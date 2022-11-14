@@ -6,7 +6,7 @@
 [![GoDoc](https://godoc.org/heytobi.dev/fuse?status.svg)](https://godoc.org//heytobi.dev/fuse)
 [![GitHub Actions](https://github.com/beverlyRoadGoose/fuse/actions/workflows/ci.yaml/badge.svg)](https://github.com/beverlyRoadGoose/fuse/actions/workflows/ci.yml)
 [![codecov.io](https://codecov.io/gh/beverlyRoadGoose/fuse/coverage.svg?branch=main)](https://codecov.io/gh/beverlyRoadGoose/fuse)
-![GitHub tag (latest SemVer)](https://img.shields.io/github/v/tag/beverlyRoadGoose/fuse?label=version)
+![GitHub tag (latest SemVer)](https://img.shields.io/github/v/release/beverlyRoadGoose/fuse?include_prereleases)
 </div>
 </h2>
 
