@@ -1,7 +1,3 @@
-<h2>
-    <img src="assets/images/fuse.png">
-<div>
-
 [![License: MIT](https://img.shields.io/badge/License-MIT-yellow.svg)](https://opensource.org/licenses/MIT)
 [![GoDoc](https://godoc.org/heytobi.dev/fuse?status.svg)](https://godoc.org//heytobi.dev/fuse)
 [![GitHub Actions](https://github.com/beverlyRoadGoose/fuse/actions/workflows/ci.yaml/badge.svg)](https://github.com/beverlyRoadGoose/fuse/actions/workflows/ci.yml)
