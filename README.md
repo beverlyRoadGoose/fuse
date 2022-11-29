@@ -41,12 +41,12 @@ config := &telegram.Config{
 
 poller, err := telegram.NewPoller(telegramConfig, httpClient)
 if err != nil {
-return nil, errors.New("failed to initialize telegram poller")
+    return nil, errors.New("failed to initialize telegram poller")
 }
 
 bot, err := telegram.NewBot(telegramConfig, httpClient)
 if err != nil {
-return nil, errors.New("failed to initialize telegram instance")
+    return nil, errors.New("failed to initialize telegram instance")
 }
 
 bot = bot.WithPoller(poller)
