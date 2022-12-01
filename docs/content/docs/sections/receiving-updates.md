@@ -61,7 +61,7 @@ to test your bot.
 {{< /hint >}}
 
 {{< hint danger >}}
-⚠️ This method will not work if an outgoing webhook is set up.
+⚠️ This method will not work if an outgoing webhook is configured.
 {{< /hint >}}
 
 
