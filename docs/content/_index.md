@@ -15,8 +15,9 @@ type: docs
 Fuse is a Go library for developing [Telegram](https://telegram.org/) bots, using the [Telegram Bot API](https://core.telegram.org/bots/api).
 
 {{< hint warning >}}
-⚠️ I'm developing this for use in a hobby project, so in the initial phase I'm only adding features as needed in the 
-main project. Overtime I'll aim to cover much of what the Telegram API provides.
+⚠️  I'm developing this for use in a hobby project, this means some things are experimental and breaking changes are very
+possible. In the initial phase I'm only adding features as needed in the main project. Overtime I'll aim to cover much
+of what the Telegram API provides.
 {{< /hint >}}
 
 ## Current Features
