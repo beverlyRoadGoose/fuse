@@ -4,8 +4,10 @@ type: docs
 ---
 
 [![License: MIT](https://img.shields.io/badge/License-MIT-yellow.svg)](https://opensource.org/licenses/MIT)
+![GitHub go.mod Go version](https://img.shields.io/github/go-mod/go-version/beverlyRoadGoose/fuse)
 [![GoDoc](https://godoc.org/heytobi.dev/fuse?status.svg)](https://godoc.org//heytobi.dev/fuse)
 [![GitHub Actions](https://github.com/beverlyRoadGoose/fuse/actions/workflows/ci.yaml/badge.svg)](https://github.com/beverlyRoadGoose/fuse/actions/workflows/ci.yml)
+[![Go Report Card](https://goreportcard.com/badge/heytobi.dev/fuse)](https://goreportcard.com/report/heytobi.dev/fuse)
 [![codecov.io](https://codecov.io/gh/beverlyRoadGoose/fuse/coverage.svg?branch=main)](https://codecov.io/gh/beverlyRoadGoose/fuse)
 ![GitHub tag (latest SemVer)](https://img.shields.io/github/v/release/beverlyRoadGoose/fuse?include_prereleases)
 
