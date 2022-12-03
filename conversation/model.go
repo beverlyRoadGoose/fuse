@@ -18,11 +18,8 @@ type Sequence interface {
 	// Start ...
 	Start(orchestrator Orchestrator)
 
-	// Finish ...
-	Finish(orchestrator Orchestrator)
-
 	// Process ..
-	Process(update *telegram.Update)
+	Process(update *telegram.Update) error
 
 	// GetName ...
 	GetName() string

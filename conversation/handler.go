@@ -24,12 +24,15 @@ func NewHandler(bot *telegram.Bot) *Handler {
 }
 
 // Handle ...
-func (h *Handler) Handle(update *telegram.Update) {
+func (h *Handler) Handle(update *telegram.Update) error {
 	if update != nil && update.Message != nil {
 		// check if there is an active sequence for this user, delegate to that sequence if there is one.
 		if sequence, hasActiveSequence := h.activeSequences[update.Message.Chat.ID]; hasActiveSequence {
-			sequence.Process(update)
-			return
+			err := sequence.Process(update)
+			if err != nil {
+				return err
+			}
+			return nil
 		}
 
 		if h.defaultResponse != "" {
@@ -49,6 +52,8 @@ func (h *Handler) Handle(update *telegram.Update) {
 			}
 		}
 	}
+
+	return nil
 }
 
 // RegisterSequence registers the active sequence for the given user. New registrations always override any already
