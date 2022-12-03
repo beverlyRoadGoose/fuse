@@ -239,7 +239,7 @@ func (b *Bot) ProcessUpdate(update *Update) error {
 }
 
 // SendMessage sends a message to the user.
-func (b *Bot) SendMessage(message *SendMessageRequest) (ActionResult, error) {
+func (b *Bot) SendMessage(message *SendMessageRequest) (*ActionResult, error) {
 	return b.messagingService.sendMessage(message)
 }
 

@@ -5,18 +5,22 @@ import (
 	"heytobi.dev/fuse/telegram"
 )
 
+type bot interface {
+	SendMessage(message *telegram.SendMessageRequest) (*telegram.ActionResult, error)
+}
+
 // Handler is a suggested default handler. It acts as an orchestrator of the non-command messages received
 // by the bot, by keeping track of the conversation context per chat, and delegating actions to the appropriate Sequence.
 //
 // If it doesn't work well with your use case, you can implement & register a custom one as your default handler.
 type Handler struct {
-	bot             *telegram.Bot
+	bot             bot
 	activeSequences map[int64]Sequence
 	defaultResponse string
 }
 
 // NewHandler ...
-func NewHandler(bot *telegram.Bot) *Handler {
+func NewHandler(bot bot) *Handler {
 	return &Handler{
 		bot:             bot,
 		activeSequences: make(map[int64]Sequence),
@@ -43,6 +47,7 @@ func (h *Handler) Handle(update *telegram.Update) error {
 
 			if err != nil {
 				logrus.WithError(err).Error("failed to send telegram message")
+				return err
 			}
 
 			if !result.Successful {
@@ -67,6 +72,7 @@ func (h *Handler) DeregisterActiveSequence(chatID int64) {
 	delete(h.activeSequences, chatID)
 }
 
-func (h *Handler) WithDefaultResponse(response string) {
+func (h *Handler) WithDefaultResponse(response string) *Handler {
 	h.defaultResponse = response
+	return h
 }
