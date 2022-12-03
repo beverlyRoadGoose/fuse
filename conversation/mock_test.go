@@ -13,8 +13,8 @@ type mockBot struct {
 	mock.Mock
 }
 
-func (m *mockSequence) Start(orchestrator Orchestrator) {
-	m.Called(orchestrator)
+func (m *mockSequence) Start(orchestrator Orchestrator, chatID int64) {
+	m.Called(orchestrator, chatID)
 }
 
 func (m *mockSequence) Process(update *telegram.Update) error {

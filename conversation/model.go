@@ -16,7 +16,7 @@ type Orchestrator interface {
 // Sequence ...
 type Sequence interface {
 	// Start ...
-	Start(orchestrator Orchestrator)
+	Start(orchestrator Orchestrator, chatID int64)
 
 	// Process ..
 	Process(update *telegram.Update) error
