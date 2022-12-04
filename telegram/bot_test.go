@@ -138,7 +138,7 @@ func TestSendMessage_SendSuccessfully(t *testing.T) {
 
 func TestRegisterHandler_RegisterHandlerSuccessfully(t *testing.T) {
 	bot, _ := NewBot(&Config{Token: "test"}, &mockHttpClient{})
-	err := bot.RegisterHandler("/start", func(update *Update) {})
+	err := bot.RegisterHandler("/start", func(update *Update) error { return nil })
 
 	assert.NoError(t, err)
 	assert.NotNil(t, bot.handlers["/start"])
@@ -146,10 +146,10 @@ func TestRegisterHandler_RegisterHandlerSuccessfully(t *testing.T) {
 
 func TestRegisterHandler_ReturnErrorIfHandlerExists(t *testing.T) {
 	bot, _ := NewBot(&Config{Token: "test"}, &mockHttpClient{})
-	_ = bot.RegisterHandler("/start", func(update *Update) {})
+	_ = bot.RegisterHandler("/start", func(update *Update) error { return nil })
 
 	// try registering another handler for the same command
-	err := bot.RegisterHandler("/start", func(update *Update) {})
+	err := bot.RegisterHandler("/start", func(update *Update) error { return nil })
 
 	assert.Error(t, err)
 	assert.Equal(t, errHandlerExists, err)
@@ -157,7 +157,7 @@ func TestRegisterHandler_ReturnErrorIfHandlerExists(t *testing.T) {
 
 func TestRegisterDefaultHandler_RegisterHandlerSuccessfully(t *testing.T) {
 	bot, _ := NewBot(&Config{Token: "test"}, &mockHttpClient{})
-	err := bot.RegisterDefaultHandler(func(update *Update) {})
+	err := bot.RegisterDefaultHandler(func(update *Update) error { return nil })
 
 	assert.NoError(t, err)
 	assert.NotNil(t, bot.defaultHandler)
@@ -165,8 +165,8 @@ func TestRegisterDefaultHandler_RegisterHandlerSuccessfully(t *testing.T) {
 
 func TestRegisterDefaultHandler_ReturnErrorIfHandlerExists(t *testing.T) {
 	bot, _ := NewBot(&Config{Token: "test"}, &mockHttpClient{})
-	_ = bot.RegisterDefaultHandler(func(update *Update) {})
-	err := bot.RegisterDefaultHandler(func(update *Update) {})
+	_ = bot.RegisterDefaultHandler(func(update *Update) error { return nil })
+	err := bot.RegisterDefaultHandler(func(update *Update) error { return nil })
 
 	assert.Error(t, err)
 	assert.Equal(t, errDefaultHandlerExists, err)

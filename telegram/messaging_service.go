@@ -25,8 +25,8 @@ func newMessagingService(httpClient httpClient, apirUrlFmt, token string) (*mess
 	}, nil
 }
 
-func (s *messagingService) sendMessage(message *SendMessageRequest) (ActionResult, error) {
-	result := ActionResult{
+func (s *messagingService) sendMessage(message *SendMessageRequest) (*ActionResult, error) {
+	result := &ActionResult{
 		Successful: false,
 	}
 

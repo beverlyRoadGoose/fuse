@@ -48,11 +48,11 @@ type ActionResult struct {
 
 // Handler defines structs that can handle bot commands / messages.
 type Handler interface {
-	Handle(update *Update)
+	Handle(update *Update) error
 }
 
 // HandlerFunc defines functions that can handle bot commands / messages.
-type HandlerFunc func(update *Update)
+type HandlerFunc func(update *Update) error
 
 // Config defines Telegrams configurable parameters.
 type Config struct {
@@ -219,13 +219,19 @@ func (b *Bot) ProcessUpdate(update *Update) error {
 	if update.Message != nil {
 		if handler, hasHandler := b.handlers[update.Message.Text]; hasHandler {
 			if handler != nil {
-				handler(update)
+				err := handler(update)
+				if err != nil {
+					return err
+				}
 			}
 			return nil
 		}
 
 		if b.defaultHandler != nil {
-			b.defaultHandler(update)
+			err := b.defaultHandler(update)
+			if err != nil {
+				return err
+			}
 		}
 	}
 
@@ -233,7 +239,7 @@ func (b *Bot) ProcessUpdate(update *Update) error {
 }
 
 // SendMessage sends a message to the user.
-func (b *Bot) SendMessage(message *SendMessageRequest) (ActionResult, error) {
+func (b *Bot) SendMessage(message *SendMessageRequest) (*ActionResult, error) {
 	return b.messagingService.sendMessage(message)
 }
 
