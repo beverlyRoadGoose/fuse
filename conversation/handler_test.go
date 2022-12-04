@@ -14,7 +14,8 @@ func TestCanRegisterSequence(t *testing.T) {
 	bot := &mockBot{}
 	handler := NewHandler(bot)
 
-	handler.RegisterSequence(chatID, &mockSequence{})
+	err := handler.RegisterSequence(chatID, &mockSequence{})
+	assert.Nil(t, err)
 
 	_, registered := handler.activeSequences[chatID]
 	assert.True(t, registered)
@@ -26,8 +27,11 @@ func TestCanDeregisterSequence(t *testing.T) {
 	bot := &mockBot{}
 	handler := NewHandler(bot)
 
-	handler.RegisterSequence(chatID, &mockSequence{})
-	handler.DeregisterActiveSequence(chatID)
+	err := handler.RegisterSequence(chatID, &mockSequence{})
+	assert.Nil(t, err)
+
+	err = handler.DeregisterActiveSequence(chatID)
+	assert.Nil(t, err)
 
 	_, registered := handler.activeSequences[chatID]
 	assert.False(t, registered)
@@ -47,10 +51,13 @@ func TestRegisterOverridesExistingSequence(t *testing.T) {
 	bot := &mockBot{}
 	handler := NewHandler(bot)
 
-	handler.RegisterSequence(chatID, firstSequence)
+	err := handler.RegisterSequence(chatID, firstSequence)
+	assert.Nil(t, err)
+
 	assert.Equal(t, firstSequenceName, handler.activeSequences[chatID].GetName())
 
-	handler.RegisterSequence(chatID, secondSequence)
+	err = handler.RegisterSequence(chatID, secondSequence)
+	assert.Nil(t, err)
 	assert.Equal(t, secondSequenceName, handler.activeSequences[chatID].GetName())
 }
 
@@ -69,9 +76,10 @@ func TestHandleReturnsErrorIfProcessFails(t *testing.T) {
 
 	bot := &mockBot{}
 	handler := NewHandler(bot)
-	handler.RegisterSequence(chatID, sequence)
+	err := handler.RegisterSequence(chatID, sequence)
+	assert.Nil(t, err)
 
-	err := handler.Handle(update)
+	err = handler.Handle(update)
 	assert.Error(t, err)
 	assert.Equal(t, expectedError, err)
 }
