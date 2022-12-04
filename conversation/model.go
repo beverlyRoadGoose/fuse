@@ -4,26 +4,27 @@ import (
 	"heytobi.dev/fuse/telegram"
 )
 
-// Orchestrator ...
+// Orchestrator defines a type responsible for orchestrating sequences.
 type Orchestrator interface {
-	// RegisterSequence ...
+	// RegisterSequence registers the given sequence as active for the given user.
 	RegisterSequence(chatID int64, sequence Sequence) error
 
-	// DeregisterActiveSequence ...
+	// DeregisterActiveSequence clears the active sequence for the given user.
 	DeregisterActiveSequence(chatID int64) error
 }
 
-// Sequence ...
+// Sequence can be thought of as the context of a conversation. It is responsible for it's own state management
+// and making sense of how an individual message fits into the broader conversation.
 type Sequence interface {
-	// Start ...
-	Start(chatID int64) error
+	// Start initiates the sequence
+	Start() error
 
-	// Finish ...
-	Finish(chatID int64) error
+	// Finish wraps up a sequence
+	Finish() error
 
-	// Process ..
+	// Process processes the given update as part of the sequence
 	Process(update *telegram.Update) error
 
-	// GetName ...
+	// GetName returns the name of the sequence
 	GetName() string
 }

@@ -13,14 +13,14 @@ type mockBot struct {
 	mock.Mock
 }
 
-func (m *mockSequence) Start(chatID int64) error {
-	args := m.Called(chatID)
+func (m *mockSequence) Start() error {
+	args := m.Called()
 	return args.Error(0)
 
 }
 
-func (m *mockSequence) Finish(chatID int64) error {
-	args := m.Called(chatID)
+func (m *mockSequence) Finish() error {
+	args := m.Called()
 	return args.Error(0)
 
 }

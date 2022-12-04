@@ -10,7 +10,10 @@ type bot interface {
 }
 
 // Handler is a suggested default handler. It acts as an orchestrator of the non-command messages received
-// by the bot, by keeping track of the conversation context per chat, and delegating actions to the appropriate Sequence.
+// by the bot by keeping track of the conversation context per chat, and delegating actions to the appropriate Sequence.
+// Whenever a message is received, the handler checks if an active Sequence is registered for the user that sent the message,
+// if an active sequence exists, the message is relayed to that Sequence to be processed. Sequences are responsible for
+// their own state management.
 //
 // If it doesn't work well with your use case, you can implement & register a custom one as your default handler.
 type Handler struct {
@@ -27,7 +30,7 @@ func NewHandler(bot bot) *Handler {
 	}
 }
 
-// Handle ...
+// Handle handles every incoming message that doesn't have a dedicated handler.
 func (h *Handler) Handle(update *telegram.Update) error {
 	if update != nil && update.Message != nil {
 		// check if there is an active sequence for this user, delegate to that sequence if there is one.
@@ -68,12 +71,14 @@ func (h *Handler) RegisterSequence(chatID int64, sequence Sequence) error {
 	return nil
 }
 
-// DeregisterActiveSequence ...
+// DeregisterActiveSequence deletes the active sequence for a user. Sequences can call this method once their flow has
+// been completed.
 func (h *Handler) DeregisterActiveSequence(chatID int64) error {
 	delete(h.activeSequences, chatID)
 	return nil
 }
 
+// WithDefaultResponse sets a default response for cases where there is no active sequence.
 func (h *Handler) WithDefaultResponse(response string) *Handler {
 	h.defaultResponse = response
 	return h
