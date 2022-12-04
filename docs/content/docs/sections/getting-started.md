@@ -6,7 +6,7 @@ weight: 1
 
 ## Installation
 
-Add the library as a dependency in your mod file:
+Add the library as a dependency:
 ```console
 go get -u heytobi.dev/fuse
 ```
