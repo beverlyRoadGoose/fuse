@@ -63,13 +63,15 @@ func (h *Handler) Handle(update *telegram.Update) error {
 
 // RegisterSequence registers the active sequence for the given user. New registrations always override any already
 // registered sequence, and there can only be 1 or no active sequences for each user, tracked by the telegram chat ID.
-func (h *Handler) RegisterSequence(chatID int64, sequence Sequence) {
+func (h *Handler) RegisterSequence(chatID int64, sequence Sequence) error {
 	h.activeSequences[chatID] = sequence
+	return nil
 }
 
 // DeregisterActiveSequence ...
-func (h *Handler) DeregisterActiveSequence(chatID int64) {
+func (h *Handler) DeregisterActiveSequence(chatID int64) error {
 	delete(h.activeSequences, chatID)
+	return nil
 }
 
 func (h *Handler) WithDefaultResponse(response string) *Handler {
