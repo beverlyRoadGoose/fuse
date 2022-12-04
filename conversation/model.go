@@ -16,10 +16,10 @@ type Orchestrator interface {
 // Sequence ...
 type Sequence interface {
 	// Start ...
-	Start(chatID int64)
+	Start(chatID int64) error
 
 	// Finish ...
-	Finish(chatID int64)
+	Finish(chatID int64) error
 
 	// Process ..
 	Process(update *telegram.Update) error
