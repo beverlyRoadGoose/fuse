@@ -27,4 +27,6 @@ type Sequence interface {
 
 	// GetName returns the name of the sequence
 	GetName() string
+
+	// TODO explore timed self-closing sequences.
 }
