@@ -1,5 +1,9 @@
 # Change Log
 
+## v0.9.1
+
+- Return error if send message request receives a non-200 status
+
 ## v0.9.0
 
 - Introduced Conversation Handler

@@ -124,7 +124,10 @@ func TestSendMessage_SendSuccessfully(t *testing.T) {
 	body := io.NopCloser(bytes.NewBuffer(responseJson))
 
 	httpClient := &mockHttpClient{}
-	httpClient.On("Do", mock.Anything, mock.Anything).Return(&http.Response{Body: body}, nil)
+	httpClient.On("Do", mock.Anything, mock.Anything).Return(&http.Response{
+		StatusCode: http.StatusOK,
+		Body:       body,
+	}, nil)
 
 	bot, _ := NewBot(&Config{Token: "test"}, httpClient)
 	result, err := bot.SendMessage(&SendMessageRequest{

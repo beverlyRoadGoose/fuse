@@ -39,13 +39,13 @@ func (s *messagingService) sendMessage(message *SendMessageRequest) (*ActionResu
 
 	bodyJson, err := json.Marshal(message)
 	if err != nil {
-		result.Description = "failed to marshal send request"
+		result.Description = "failed to marshal send message request"
 		return result, errors.Wrap(err, result.Description)
 	}
 
 	request, err := http.NewRequest(httpPost, url, bytes.NewBuffer(bodyJson))
 	if err != nil {
-		result.Description = "failed to create send request"
+		result.Description = "failed to create send message request"
 		return result, errors.Wrap(err, result.Description)
 	}
 	request.Header.Set("Content-Type", "application/json")
@@ -62,9 +62,14 @@ func (s *messagingService) sendMessage(message *SendMessageRequest) (*ActionResu
 		}
 	}(response.Body)
 
+	if response.StatusCode != http.StatusOK {
+		result.Description = fmt.Sprintf("unexpected response code: %d, %s", response.StatusCode, response.Body)
+		return result, errors.New(result.Description)
+	}
+
 	responseBody, err := io.ReadAll(response.Body)
 	if err != nil {
-		result.Description = "failed to parse send response body"
+		result.Description = "failed to parse send message response body"
 		return result, errors.Wrap(err, result.Description)
 	}
 

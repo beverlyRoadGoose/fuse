@@ -1,4 +1,4 @@
-package telegram // import "heytobi.dev/fuse/telegram"
+package telegram
 
 import (
 	"github.com/stretchr/testify/mock"
