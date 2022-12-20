@@ -213,7 +213,10 @@ func TestRegisterWebhook_RegisterSuccessfully(t *testing.T) {
 	body := io.NopCloser(bytes.NewBuffer(json))
 
 	httpClient := &mockHttpClient{}
-	httpClient.On("Do", mock.Anything, mock.Anything).Return(&http.Response{Body: body}, nil)
+	httpClient.On("Do", mock.Anything, mock.Anything).Return(&http.Response{
+		StatusCode: http.StatusOK,
+		Body:       body,
+	}, nil)
 
 	bot, _ := NewBot(&Config{Token: "test", UpdateMethod: UpdateMethodWebhook}, httpClient)
 	result, err := bot.RegisterWebhook(&Webhook{Url: "webhook.url"})
@@ -228,7 +231,10 @@ func TestRegisterWebhook_ReturnFalseIfResponseResultIsFalse(t *testing.T) {
 	body := io.NopCloser(bytes.NewBuffer(responseJson))
 
 	httpClient := &mockHttpClient{}
-	httpClient.On("Do", mock.Anything, mock.Anything).Return(&http.Response{Body: body}, nil)
+	httpClient.On("Do", mock.Anything, mock.Anything).Return(&http.Response{
+		StatusCode: http.StatusOK,
+		Body:       body,
+	}, nil)
 
 	bot, _ := NewBot(&Config{Token: "test", UpdateMethod: UpdateMethodWebhook}, httpClient)
 	result, err := bot.RegisterWebhook(&Webhook{Url: "webhook.url"})

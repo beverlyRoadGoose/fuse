@@ -3,6 +3,7 @@ package telegram
 import (
 	"bytes"
 	"encoding/json"
+	"errors"
 	"io"
 	"net/http"
 	"strings"
@@ -17,7 +18,7 @@ const (
 	testToken     = ""
 )
 
-func TestMessagingService_ReturnsErrorIfMessageIsNil(t *testing.T) {
+func TestSendMessage_ReturnsErrorIfMessageIsNil(t *testing.T) {
 	httpClient := &mockHttpClient{}
 	service, _ := newMessagingService(httpClient, testApiUrlFmt, testToken)
 
@@ -28,7 +29,7 @@ func TestMessagingService_ReturnsErrorIfMessageIsNil(t *testing.T) {
 	assert.Equal(t, errNilMessageRequest, err)
 }
 
-func TestMessagingService_ActionResultIsSuccessfulIfMessageIsSentSuccessfully(t *testing.T) {
+func TestSendMessage_ActionResultIsSuccessfulIfMessageIsSentSuccessfully(t *testing.T) {
 	httpClient := &mockHttpClient{}
 	response := sendMessageResponse{Ok: true}
 	responseJson, _ := json.Marshal(response)
@@ -46,7 +47,7 @@ func TestMessagingService_ActionResultIsSuccessfulIfMessageIsSentSuccessfully(t 
 	assert.Nil(t, err)
 }
 
-func TestMessagingService_ReturnsErrorIfResponseCodeIsNot200(t *testing.T) {
+func TestSendMessage_ReturnsErrorIfResponseCodeIsNot200(t *testing.T) {
 	httpClient := &mockHttpClient{}
 	response := sendMessageResponse{Ok: false}
 	responseJson, _ := json.Marshal(response)
@@ -65,7 +66,20 @@ func TestMessagingService_ReturnsErrorIfResponseCodeIsNot200(t *testing.T) {
 	assert.True(t, strings.HasPrefix(result.Description, "unexpected response code: 500"))
 }
 
-func TestMessagingService_ReturnsErrorIfUnableToParseResponse(t *testing.T) {
+func TestSendMessage_ReturnsErrorIfRequestFails(t *testing.T) {
+	httpClient := &mockHttpClient{}
+	httpClient.On("Do", mock.Anything, mock.Anything).Return(nil, errors.New("error"))
+	service, _ := newMessagingService(httpClient, testApiUrlFmt, testToken)
+
+	message := &SendMessageRequest{}
+	result, err := service.sendMessage(message)
+
+	assert.False(t, result.Successful)
+	assert.Error(t, err)
+	assert.True(t, strings.EqualFold(err.Error(), "http request failed: error"))
+}
+
+func TestSendMessage_ReturnsErrorIfUnableToParseResponse(t *testing.T) {
 	httpClient := &mockHttpClient{}
 	responseBody := io.NopCloser(bytes.NewBufferString(`invalid json`))
 	httpClient.On("Do", mock.Anything, mock.Anything).Return(&http.Response{
