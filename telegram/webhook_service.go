@@ -4,10 +4,11 @@ import (
 	"bytes"
 	"encoding/json"
 	"fmt"
-	"github.com/pkg/errors"
-	"github.com/sirupsen/logrus"
 	"io"
 	"net/http"
+
+	"github.com/pkg/errors"
+	"github.com/sirupsen/logrus"
 )
 
 type webhookService struct {
@@ -59,6 +60,16 @@ func (s *webhookService) registerWebhook(webhook *Webhook) (bool, error) {
 		}
 	}(response.Body)
 
+	if response.StatusCode != http.StatusOK {
+		return false, errors.New(
+			fmt.Sprintf(
+				"failed to register webhook, unexpected response code: %d, %s",
+				response.StatusCode,
+				response.Body,
+			),
+		)
+	}
+
 	responseBody, err := io.ReadAll(response.Body)
 	if err != nil {
 		return false, errors.Wrap(err, "failed to parse register webhook response body")
@@ -87,7 +98,7 @@ func (s *webhookService) deleteWebhook(dropPendingUpdates bool) (bool, error) {
 
 	request, err := http.NewRequest(httpPost, url, bytes.NewBuffer(bodyJson))
 	if err != nil {
-		return false, errors.Wrap(err, "failed to create register webhook request")
+		return false, errors.Wrap(err, "failed to create delete webhook request")
 	}
 	request.Header.Set("Content-Type", "application/json")
 
@@ -101,6 +112,16 @@ func (s *webhookService) deleteWebhook(dropPendingUpdates bool) (bool, error) {
 			logrus.WithError(err).Error("failed to close response body")
 		}
 	}(response.Body)
+
+	if response.StatusCode != http.StatusOK {
+		return false, errors.New(
+			fmt.Sprintf(
+				"failed to delete webhook, unexpected response code: %d, %s",
+				response.StatusCode,
+				response.Body,
+			),
+		)
+	}
 
 	responseBody, err := io.ReadAll(response.Body)
 	if err != nil {
