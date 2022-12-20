@@ -64,3 +64,20 @@ func TestMessagingService_ReturnsErrorIfResponseCodeIsNot200(t *testing.T) {
 	assert.Error(t, err)
 	assert.True(t, strings.HasPrefix(result.Description, "unexpected response code: 500"))
 }
+
+func TestMessagingService_ReturnsErrorIfUnableToParseResponse(t *testing.T) {
+	httpClient := &mockHttpClient{}
+	responseBody := io.NopCloser(bytes.NewBufferString(`invalid json`))
+	httpClient.On("Do", mock.Anything, mock.Anything).Return(&http.Response{
+		StatusCode: http.StatusOK,
+		Body:       responseBody,
+	}, nil)
+	service, _ := newMessagingService(httpClient, testApiUrlFmt, testToken)
+
+	message := &SendMessageRequest{}
+	result, err := service.sendMessage(message)
+
+	assert.False(t, result.Successful)
+	assert.Error(t, err)
+	assert.True(t, strings.EqualFold(result.Description, "failed to unmarshall sendMessage response"))
+}
