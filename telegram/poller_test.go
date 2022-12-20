@@ -1,4 +1,5 @@
-package telegram // import "heytobi.dev/fuse/telegram"
+package telegram
+
 import (
 	"bytes"
 	"encoding/json"
