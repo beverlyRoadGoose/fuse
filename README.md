@@ -5,8 +5,6 @@
 [![Go Report Card](https://goreportcard.com/badge/heytobi.dev/fuse)](https://goreportcard.com/report/heytobi.dev/fuse)
 [![codecov.io](https://codecov.io/gh/beverlyRoadGoose/fuse/coverage.svg?branch=dev)](https://codecov.io/gh/beverlyRoadGoose/fuse)
 [![GitHub tag (latest SemVer)](https://img.shields.io/github/v/release/beverlyRoadGoose/fuse?include_prereleases)](https://github.com/beverlyRoadGoose/fuse/releases)
-</div>
-</h2>
 
 Fuse is a Go library for developing [Telegram](https://telegram.org/) bots, using the [Telegram Bot API](https://core.telegram.org/bots/api).
 
