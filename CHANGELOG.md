@@ -4,6 +4,7 @@
 
 - Return error if send message request receives a non-200 status
 - Return error if webhook registration/deletion requests receive a non-200 status
+- Bump go version up to 1.20
 
 ## v0.9.0
 
