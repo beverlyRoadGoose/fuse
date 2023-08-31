@@ -1,6 +1,7 @@
 package telegram // import "heytobi.dev/fuse/telegram"
 
 import (
+	"context"
 	"net/http"
 	"strconv"
 
@@ -48,11 +49,11 @@ type ActionResult struct {
 
 // Handler defines structs that can handle bot commands / messages.
 type Handler interface {
-	Handle(update *Update) error
+	Handle(ctx context.Context, update *Update) error
 }
 
 // HandlerFunc defines functions that can handle bot commands / messages.
-type HandlerFunc func(update *Update) error
+type HandlerFunc func(ctx context.Context, update *Update) error
 
 // Config defines Telegrams configurable parameters.
 type Config struct {
@@ -142,6 +143,8 @@ func (b *Bot) WithPoller(p poller) *Bot {
 
 // Start starts the process of polling for updates from Telegram.
 func (b *Bot) Start() error {
+	ctx := context.Background()
+
 	if b.config.UpdateMethod == UpdateMethodGetUpdates && !b.isRunning {
 		if b.poller == nil {
 			return errNilPoller
@@ -150,7 +153,7 @@ func (b *Bot) Start() error {
 		updatesChan := b.poller.getUpdatesChannel()
 		go func() {
 			for update := range updatesChan {
-				err := b.ProcessUpdate(update)
+				err := b.ProcessUpdate(ctx, update)
 				if err != nil {
 					logrus.WithError(err).Error("failed to process update")
 				}
@@ -211,7 +214,7 @@ func (b *Bot) RegisterHandler(command string, handlerFunc HandlerFunc) error {
 }
 
 // ProcessUpdate processes updates from telegram.
-func (b *Bot) ProcessUpdate(update *Update) error {
+func (b *Bot) ProcessUpdate(ctx context.Context, update *Update) error {
 	if update == nil {
 		return errNilUpdate
 	}
@@ -219,7 +222,7 @@ func (b *Bot) ProcessUpdate(update *Update) error {
 	if update.Message != nil {
 		if handler, hasHandler := b.handlers[update.Message.Text]; hasHandler {
 			if handler != nil {
-				err := handler(update)
+				err := handler(ctx, update)
 				if err != nil {
 					return err
 				}
@@ -228,7 +231,7 @@ func (b *Bot) ProcessUpdate(update *Update) error {
 		}
 
 		if b.defaultHandler != nil {
-			err := b.defaultHandler(update)
+			err := b.defaultHandler(ctx, update)
 			if err != nil {
 				return err
 			}
