@@ -2,6 +2,7 @@ package telegram // import "heytobi.dev/fuse/telegram"
 
 import (
 	"bytes"
+	"context"
 	"encoding/json"
 	"io"
 	"net/http"
@@ -141,7 +142,7 @@ func TestSendMessage_SendSuccessfully(t *testing.T) {
 
 func TestRegisterHandler_RegisterHandlerSuccessfully(t *testing.T) {
 	bot, _ := NewBot(&Config{Token: "test"}, &mockHttpClient{})
-	err := bot.RegisterHandler("/start", func(update *Update) error { return nil })
+	err := bot.RegisterHandler("/start", func(ctx context.Context, update *Update) error { return nil })
 
 	assert.NoError(t, err)
 	assert.NotNil(t, bot.handlers["/start"])
@@ -149,10 +150,10 @@ func TestRegisterHandler_RegisterHandlerSuccessfully(t *testing.T) {
 
 func TestRegisterHandler_ReturnErrorIfHandlerExists(t *testing.T) {
 	bot, _ := NewBot(&Config{Token: "test"}, &mockHttpClient{})
-	_ = bot.RegisterHandler("/start", func(update *Update) error { return nil })
+	_ = bot.RegisterHandler("/start", func(ctx context.Context, update *Update) error { return nil })
 
 	// try registering another handler for the same command
-	err := bot.RegisterHandler("/start", func(update *Update) error { return nil })
+	err := bot.RegisterHandler("/start", func(ctx context.Context, update *Update) error { return nil })
 
 	assert.Error(t, err)
 	assert.Equal(t, errHandlerExists, err)
@@ -160,7 +161,7 @@ func TestRegisterHandler_ReturnErrorIfHandlerExists(t *testing.T) {
 
 func TestRegisterDefaultHandler_RegisterHandlerSuccessfully(t *testing.T) {
 	bot, _ := NewBot(&Config{Token: "test"}, &mockHttpClient{})
-	err := bot.RegisterDefaultHandler(func(update *Update) error { return nil })
+	err := bot.RegisterDefaultHandler(func(ctx context.Context, update *Update) error { return nil })
 
 	assert.NoError(t, err)
 	assert.NotNil(t, bot.defaultHandler)
@@ -168,8 +169,8 @@ func TestRegisterDefaultHandler_RegisterHandlerSuccessfully(t *testing.T) {
 
 func TestRegisterDefaultHandler_ReturnErrorIfHandlerExists(t *testing.T) {
 	bot, _ := NewBot(&Config{Token: "test"}, &mockHttpClient{})
-	_ = bot.RegisterDefaultHandler(func(update *Update) error { return nil })
-	err := bot.RegisterDefaultHandler(func(update *Update) error { return nil })
+	_ = bot.RegisterDefaultHandler(func(ctx context.Context, update *Update) error { return nil })
+	err := bot.RegisterDefaultHandler(func(ctx context.Context, update *Update) error { return nil })
 
 	assert.Error(t, err)
 	assert.Equal(t, errDefaultHandlerExists, err)
@@ -245,7 +246,7 @@ func TestRegisterWebhook_ReturnFalseIfResponseResultIsFalse(t *testing.T) {
 
 func TestProcessUpdate_ReturnErrorIfUpdateIsNil(t *testing.T) {
 	bot, _ := NewBot(&Config{Token: "test"}, &mockHttpClient{})
-	err := bot.ProcessUpdate(nil)
+	err := bot.ProcessUpdate(context.Background(), nil)
 
 	assert.Error(t, err)
 	assert.Equal(t, errNilUpdate, err)
@@ -253,7 +254,7 @@ func TestProcessUpdate_ReturnErrorIfUpdateIsNil(t *testing.T) {
 
 func TestProcessUpdate_DontReturnErrorIfGivenValidUpdateType(t *testing.T) {
 	bot, _ := NewBot(&Config{Token: "test"}, &mockHttpClient{})
-	err := bot.ProcessUpdate(&Update{
+	err := bot.ProcessUpdate(context.Background(), &Update{
 		Message: &Message{Text: "/test"},
 	})
 

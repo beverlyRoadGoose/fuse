@@ -1,6 +1,7 @@
 package conversation // import "heytobi.dev/fuse/conversation"
 
 import (
+	"context"
 	"github.com/sirupsen/logrus"
 	"heytobi.dev/fuse/telegram"
 )
@@ -31,7 +32,7 @@ func NewHandler(bot bot) *Handler {
 }
 
 // Handle handles every incoming message that doesn't have a dedicated handler.
-func (h *Handler) Handle(update *telegram.Update) error {
+func (h *Handler) Handle(ctx context.Context, update *telegram.Update) error {
 	if update != nil && update.Message != nil {
 		// check if there is an active sequence for this user, delegate to that sequence if there is one.
 		if sequence, hasActiveSequence := h.activeSequences[update.Message.Chat.ID]; hasActiveSequence {

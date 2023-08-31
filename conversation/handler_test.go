@@ -1,6 +1,7 @@
 package conversation // import "heytobi.dev/fuse/conversation"
 
 import (
+	"context"
 	"errors"
 	"github.com/stretchr/testify/assert"
 	"github.com/stretchr/testify/mock"
@@ -79,7 +80,7 @@ func TestHandleReturnsErrorIfProcessFails(t *testing.T) {
 	err := handler.RegisterSequence(chatID, sequence)
 	assert.Nil(t, err)
 
-	err = handler.Handle(update)
+	err = handler.Handle(context.Background(), update)
 	assert.Error(t, err)
 	assert.Equal(t, expectedError, err)
 }
@@ -99,7 +100,7 @@ func TestHandleReturnsErrorIfSendingDefaultMessageFails(t *testing.T) {
 
 	handler := NewHandler(bot).WithDefaultResponse("default response")
 
-	err := handler.Handle(update)
+	err := handler.Handle(context.Background(), update)
 	assert.Error(t, err)
 	assert.Equal(t, expectedError, err)
 }
