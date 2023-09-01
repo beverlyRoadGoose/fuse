@@ -1,5 +1,12 @@
 # Change Log
 
+## v0.10.0
+- added context parameter to handlers
+- improved method naming in conversation handler api
+- replace with ConversationHandler `WithDefaultDefaultResponse` method with `WithDefaultDefaultSequence`
+- added context parameter to sequence process method
+- added context and update parameters to sequence start method
+
 ## v0.9.2
 
 - Bump go version up to 1.20

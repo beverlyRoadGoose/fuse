@@ -21,7 +21,7 @@ if err != nil {
     log.Fatal("failed to register webhook")
 }
 
-bot.RegisterHandler("/start", func(update *telegram.Update) {
+bot.RegisterHandler("/start", func(ctx context.Context, update *telegram.Update) {
     result, err := bot.Send(telegram.SendMessageRequest{
         ChatID: update.Message.Chat.ID,
         Text:   " ¯\_(ツ)_/¯",

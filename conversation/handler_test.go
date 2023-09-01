@@ -1,6 +1,7 @@
 package conversation // import "heytobi.dev/fuse/conversation"
 
 import (
+	"context"
 	"errors"
 	"github.com/stretchr/testify/assert"
 	"github.com/stretchr/testify/mock"
@@ -14,7 +15,7 @@ func TestCanRegisterSequence(t *testing.T) {
 	bot := &mockBot{}
 	handler := NewHandler(bot)
 
-	err := handler.RegisterSequence(chatID, &mockSequence{})
+	err := handler.RegisterActiveSequence(chatID, &mockSequence{})
 	assert.Nil(t, err)
 
 	_, registered := handler.activeSequences[chatID]
@@ -27,7 +28,7 @@ func TestCanDeregisterSequence(t *testing.T) {
 	bot := &mockBot{}
 	handler := NewHandler(bot)
 
-	err := handler.RegisterSequence(chatID, &mockSequence{})
+	err := handler.RegisterActiveSequence(chatID, &mockSequence{})
 	assert.Nil(t, err)
 
 	err = handler.DeregisterActiveSequence(chatID)
@@ -51,12 +52,12 @@ func TestRegisterOverridesExistingSequence(t *testing.T) {
 	bot := &mockBot{}
 	handler := NewHandler(bot)
 
-	err := handler.RegisterSequence(chatID, firstSequence)
+	err := handler.RegisterActiveSequence(chatID, firstSequence)
 	assert.Nil(t, err)
 
 	assert.Equal(t, firstSequenceName, handler.activeSequences[chatID].GetName())
 
-	err = handler.RegisterSequence(chatID, secondSequence)
+	err = handler.RegisterActiveSequence(chatID, secondSequence)
 	assert.Nil(t, err)
 	assert.Equal(t, secondSequenceName, handler.activeSequences[chatID].GetName())
 }
@@ -72,34 +73,14 @@ func TestHandleReturnsErrorIfProcessFails(t *testing.T) {
 	expectedError := errors.New("delegation failed")
 
 	sequence := &mockSequence{}
-	sequence.On("Process", update).Return(expectedError)
+	sequence.On("Process", mock.Anything, update).Return(expectedError)
 
 	bot := &mockBot{}
 	handler := NewHandler(bot)
-	err := handler.RegisterSequence(chatID, sequence)
+	err := handler.RegisterActiveSequence(chatID, sequence)
 	assert.Nil(t, err)
 
-	err = handler.Handle(update)
-	assert.Error(t, err)
-	assert.Equal(t, expectedError, err)
-}
-
-func TestHandleReturnsErrorIfSendingDefaultMessageFails(t *testing.T) {
-	chatID := int64(1)
-	update := &telegram.Update{
-		Message: &telegram.Message{
-			Chat: &telegram.Chat{ID: chatID},
-		},
-	}
-
-	expectedError := errors.New("send message failed")
-
-	bot := &mockBot{}
-	bot.On("SendMessage", mock.Anything).Return(nil, expectedError)
-
-	handler := NewHandler(bot).WithDefaultResponse("default response")
-
-	err := handler.Handle(update)
+	err = handler.Handle(context.Background(), update)
 	assert.Error(t, err)
 	assert.Equal(t, expectedError, err)
 }
