@@ -1,7 +1,8 @@
 # Change Log
 
 ## v0.10.0
-- add context parameter to handlers
+- added context parameter to handlers
+- improved method naming in conversation handler api
 
 ## v0.9.2
 
