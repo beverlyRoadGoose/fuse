@@ -16,13 +16,11 @@ type mockBot struct {
 func (m *mockSequence) Start() error {
 	args := m.Called()
 	return args.Error(0)
-
 }
 
 func (m *mockSequence) Finish() error {
 	args := m.Called()
 	return args.Error(0)
-
 }
 
 func (m *mockSequence) Process(update *telegram.Update) error {

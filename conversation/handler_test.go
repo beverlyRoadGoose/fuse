@@ -4,7 +4,6 @@ import (
 	"context"
 	"errors"
 	"github.com/stretchr/testify/assert"
-	"github.com/stretchr/testify/mock"
 	"heytobi.dev/fuse/telegram"
 	"testing"
 )
@@ -81,26 +80,6 @@ func TestHandleReturnsErrorIfProcessFails(t *testing.T) {
 	assert.Nil(t, err)
 
 	err = handler.Handle(context.Background(), update)
-	assert.Error(t, err)
-	assert.Equal(t, expectedError, err)
-}
-
-func TestHandleReturnsErrorIfSendingDefaultMessageFails(t *testing.T) {
-	chatID := int64(1)
-	update := &telegram.Update{
-		Message: &telegram.Message{
-			Chat: &telegram.Chat{ID: chatID},
-		},
-	}
-
-	expectedError := errors.New("send message failed")
-
-	bot := &mockBot{}
-	bot.On("SendMessage", mock.Anything).Return(nil, expectedError)
-
-	handler := NewHandler(bot).WithDefaultResponse("default response")
-
-	err := handler.Handle(context.Background(), update)
 	assert.Error(t, err)
 	assert.Equal(t, expectedError, err)
 }

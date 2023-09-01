@@ -3,6 +3,7 @@
 ## v0.10.0
 - added context parameter to handlers
 - improved method naming in conversation handler api
+- replace with ConversationHandler `WithDefaultDefaultResponse` method with `WithDefaultDefaultSequence`
 
 ## v0.9.2
 

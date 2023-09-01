@@ -2,7 +2,6 @@ package conversation // import "heytobi.dev/fuse/conversation"
 
 import (
 	"context"
-	"github.com/sirupsen/logrus"
 	"heytobi.dev/fuse/telegram"
 )
 
@@ -20,7 +19,7 @@ type bot interface {
 type Handler struct {
 	bot             bot
 	activeSequences map[int64]Sequence
-	defaultResponse string
+	defaultSequence Sequence
 }
 
 // NewHandler ...
@@ -43,21 +42,10 @@ func (h *Handler) Handle(ctx context.Context, update *telegram.Update) error {
 			return nil
 		}
 
-		if h.defaultResponse != "" {
-			result, err := h.bot.SendMessage(&telegram.SendMessageRequest{
-				ChatID: update.Message.Chat.ID,
-				Text:   h.defaultResponse,
-			})
-
+		if h.defaultSequence != nil {
+			err := h.defaultSequence.Process(update)
 			if err != nil {
-				logrus.WithError(err).Error("failed to send telegram message")
 				return err
-			}
-
-			if !result.Successful {
-				logrus.WithFields(logrus.Fields{
-					"response": result,
-				}).Warn("send message result was false")
 			}
 		}
 	}
@@ -79,8 +67,8 @@ func (h *Handler) DeregisterActiveSequence(chatID int64) error {
 	return nil
 }
 
-// WithDefaultResponse sets a default response for cases where there is no active sequence.
-func (h *Handler) WithDefaultResponse(response string) *Handler {
-	h.defaultResponse = response
+// WithDefaultSequence sets a fallback sequence for messages without a dedicated sequence.
+func (h *Handler) WithDefaultSequence(sequence Sequence) *Handler {
+	h.defaultSequence = sequence
 	return h
 }
