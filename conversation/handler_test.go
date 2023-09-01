@@ -4,6 +4,7 @@ import (
 	"context"
 	"errors"
 	"github.com/stretchr/testify/assert"
+	"github.com/stretchr/testify/mock"
 	"heytobi.dev/fuse/telegram"
 	"testing"
 )
@@ -72,7 +73,7 @@ func TestHandleReturnsErrorIfProcessFails(t *testing.T) {
 	expectedError := errors.New("delegation failed")
 
 	sequence := &mockSequence{}
-	sequence.On("Process", update).Return(expectedError)
+	sequence.On("Process", mock.Anything, update).Return(expectedError)
 
 	bot := &mockBot{}
 	handler := NewHandler(bot)

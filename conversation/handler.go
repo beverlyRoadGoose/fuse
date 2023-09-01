@@ -35,7 +35,7 @@ func (h *Handler) Handle(ctx context.Context, update *telegram.Update) error {
 	if update != nil && update.Message != nil {
 		// check if there is an active sequence for this user, delegate to that sequence if there is one.
 		if sequence, hasActiveSequence := h.activeSequences[update.Message.Chat.ID]; hasActiveSequence {
-			err := sequence.Process(update)
+			err := sequence.Process(ctx, update)
 			if err != nil {
 				return err
 			}
@@ -43,7 +43,7 @@ func (h *Handler) Handle(ctx context.Context, update *telegram.Update) error {
 		}
 
 		if h.defaultSequence != nil {
-			err := h.defaultSequence.Process(update)
+			err := h.defaultSequence.Process(ctx, update)
 			if err != nil {
 				return err
 			}

@@ -1,6 +1,7 @@
 package conversation // import "heytobi.dev/fuse/conversation"
 
 import (
+	"context"
 	"heytobi.dev/fuse/telegram"
 )
 
@@ -23,7 +24,7 @@ type Sequence interface {
 	Finish() error
 
 	// Process processes the given update as part of the sequence
-	Process(update *telegram.Update) error
+	Process(ctx context.Context, update *telegram.Update) error
 
 	// GetName returns the name of the sequence
 	GetName() string

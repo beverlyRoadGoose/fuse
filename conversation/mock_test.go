@@ -1,6 +1,7 @@
 package conversation
 
 import (
+	"context"
 	"github.com/stretchr/testify/mock"
 	"heytobi.dev/fuse/telegram"
 )
@@ -23,8 +24,8 @@ func (m *mockSequence) Finish() error {
 	return args.Error(0)
 }
 
-func (m *mockSequence) Process(update *telegram.Update) error {
-	args := m.Called(update)
+func (m *mockSequence) Process(ctx context.Context, update *telegram.Update) error {
+	args := m.Called(ctx, update)
 	return args.Error(0)
 }
 
