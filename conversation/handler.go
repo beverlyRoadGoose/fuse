@@ -65,9 +65,9 @@ func (h *Handler) Handle(ctx context.Context, update *telegram.Update) error {
 	return nil
 }
 
-// RegisterSequence registers the active sequence for the given user. New registrations always override any already
-// registered sequence, and there can only be 1 or no active sequences for each user, tracked by the telegram chat ID.
-func (h *Handler) RegisterSequence(chatID int64, sequence Sequence) error {
+// RegisterActiveSequence registers the active sequence for the given user. New registrations always override any already
+// registered sequence. There can be at most 1 active sequences for a user, tracked by the telegram chat ID.
+func (h *Handler) RegisterActiveSequence(chatID int64, sequence Sequence) error {
 	h.activeSequences[chatID] = sequence
 	return nil
 }

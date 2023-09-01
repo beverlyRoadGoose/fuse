@@ -6,14 +6,14 @@ import (
 
 // Orchestrator defines a type responsible for orchestrating sequences.
 type Orchestrator interface {
-	// RegisterSequence registers the given sequence as active for the given user.
-	RegisterSequence(chatID int64, sequence Sequence) error
+	// RegisterActiveSequence registers the given sequence as active for the given user.
+	RegisterActiveSequence(chatID int64, sequence Sequence) error
 
 	// DeregisterActiveSequence clears the active sequence for the given user.
 	DeregisterActiveSequence(chatID int64) error
 }
 
-// Sequence can be thought of as the context of a conversation. It is responsible for it's own state management
+// Sequence can be thought of as the context of a conversation. It is responsible for its own state management
 // and making sense of how an individual message fits into the broader conversation.
 type Sequence interface {
 	// Start initiates the sequence
@@ -28,5 +28,5 @@ type Sequence interface {
 	// GetName returns the name of the sequence
 	GetName() string
 
-	// TODO explore timed self-closing sequences.
+	// TODO explore time based self-closing sequences.
 }
