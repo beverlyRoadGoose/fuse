@@ -14,7 +14,7 @@ type mockBot struct {
 	mock.Mock
 }
 
-func (m *mockSequence) Start() error {
+func (m *mockSequence) Start(ctx context.Context, update *telegram.Update) error {
 	args := m.Called()
 	return args.Error(0)
 }

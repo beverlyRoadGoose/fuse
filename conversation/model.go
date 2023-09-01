@@ -18,7 +18,7 @@ type Orchestrator interface {
 // and making sense of how an individual message fits into the broader conversation.
 type Sequence interface {
 	// Start initiates the sequence
-	Start() error
+	Start(ctx context.Context, update *telegram.Update) error
 
 	// Finish wraps up a sequence
 	Finish() error
